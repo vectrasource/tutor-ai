@@ -170,6 +170,8 @@
   }
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
   .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .form-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  @media (max-width: 560px) { .form-grid-4 { grid-template-columns: 1fr 1fr; } }
   .form-row { margin-bottom: 14px; }
   label { display: block; font-size: 11px; color: var(--ink-light); font-weight: 600; margin-bottom: 5px; letter-spacing: 0.5px; text-transform: uppercase; }
   select, textarea, input[type="text"] {
@@ -332,7 +334,7 @@
 
   <!-- FORM -->
   <div class="form-card">
-    <div class="form-grid-3">
+    <div class="form-grid-4">
       <div>
         <label for="langSelect">Language</label>
         <select id="langSelect">
@@ -341,6 +343,17 @@
           <option value="Hindi">Hindi (हिंदी)</option>
           <option value="Tamil">Tamil (தமிழ்)</option>
           <option value="Telugu">Telugu (తెలుగు)</option>
+        </select>
+      </div>
+      <div>
+        <label for="boardSelect">Syllabus / Board</label>
+        <select id="boardSelect">
+          <option value="Kerala SCERT">Kerala SCERT</option>
+          <option value="CBSE">CBSE</option>
+          <option value="Tamil Nadu State Board">TN State Board</option>
+          <option value="Telangana State Board">TS State Board</option>
+          <option value="Karnataka State Board">KA State Board</option>
+          <option value="ICSE">ICSE</option>
         </select>
       </div>
       <div>
@@ -418,7 +431,7 @@ const tools = {
     label: 'Describe the question paper you need',
     placeholder: 'E.g. Chapter: Quadratic Equations. Total marks: 40. Include 5 MCQ, 3 short answer, 2 long answer. Medium difficulty...',
     loaderText: 'Generating question paper...',
-    prompt: (lang, subject, cls, input) => `You are TutorAI, an expert teaching assistant for Indian tuition teachers. Generate a complete question paper in ${lang} for ${subject}, ${cls}.
+    prompt: (lang, board, subject, cls, input) => `You are TutorAI, an expert teaching assistant for Indian tuition teachers. Generate a complete question paper in ${lang} for ${subject}, ${cls} following ${board} curriculum and question paper format.
 
 Requirements: ${input}
 
@@ -438,13 +451,13 @@ SECTION B — Short Answer
 SECTION C — Long Answer
 1. Question... [Marks]
 
-Write all questions in ${lang}. Make questions curriculum-appropriate for Indian education system (CBSE/State Board). Include answer key at the end.`
+Write all questions in ${lang}. If Kerala SCERT: use activity-based questions, score pattern 1/2/4/6 marks, follow Kerala State syllabus chapter topics. If CBSE: follow NCERT topics and standard CBSE format. Always include answer key at the end.`
   },
   notes: {
     label: 'Which chapter or topic do you need notes for?',
     placeholder: 'E.g. Chapter: Photosynthesis. Need detailed notes with diagrams description, key points, and summary...',
     loaderText: 'Creating study notes...',
-    prompt: (lang, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Create comprehensive study notes in ${lang} for ${subject}, ${cls}.
+    prompt: (lang, board, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Create comprehensive study notes in ${lang} for ${subject}, ${cls} as per ${board} syllabus.
 
 Topic: ${input}
 
@@ -463,7 +476,7 @@ Write in clear ${lang} appropriate for ${cls} students. Use simple language, avo
     label: 'Describe the student and what to communicate',
     placeholder: 'E.g. Student Rahul, Class 8, doing well in Math but struggling in Science. Attendance good. Next exam in 2 weeks, needs more practice...',
     loaderText: 'Writing parent letter...',
-    prompt: (lang, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Write a professional parent progress letter in ${lang}.
+    prompt: (lang, board, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Write a professional parent progress letter in ${lang} for a ${board} student.
 
 Student details: ${input}
 Subject focus: ${subject}
@@ -487,7 +500,7 @@ Write in warm, professional ${lang} that Indian parents can relate to. Be encour
     label: 'What topics to cover and for how many days?',
     placeholder: 'E.g. Cover Trigonometry basics for Class 10 over 2 weeks. 1 hour sessions daily. Students are beginners in this topic...',
     loaderText: 'Building lesson plan...',
-    prompt: (lang, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Create a detailed lesson plan in ${lang} for ${subject}, ${cls}.
+    prompt: (lang, board, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Create a detailed lesson plan in ${lang} for ${subject}, ${cls} following ${board} curriculum.
 
 Requirements: ${input}
 
@@ -513,7 +526,7 @@ Write in ${lang}. Make it practical and implementable for an Indian tuition teac
     label: 'Topic and number of questions needed',
     placeholder: 'E.g. Topic: Human Digestive System. Need 20 MCQ questions. Mix of easy, medium and hard. With answer key...',
     loaderText: 'Generating MCQ questions...',
-    prompt: (lang, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Generate multiple choice questions (MCQ) in ${lang} for ${subject}, ${cls}.
+    prompt: (lang, board, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Generate multiple choice questions (MCQ) in ${lang} for ${subject}, ${cls} as per ${board} syllabus.
 
 Requirements: ${input}
 
@@ -534,7 +547,7 @@ Write all questions in ${lang}. Make questions curriculum-appropriate for Indian
     label: 'Which topic or concept needs to be explained?',
     placeholder: 'E.g. Explain the concept of Photosynthesis in a simple way that Class 6 students can understand easily...',
     loaderText: 'Creating explanation...',
-    prompt: (lang, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Write a simple, clear explanation in ${lang} for ${subject}, ${cls} students.
+    prompt: (lang, board, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Write a simple, clear explanation in ${lang} for ${subject}, ${cls} students following ${board} curriculum.
 
 Topic to explain: ${input}
 
@@ -576,10 +589,11 @@ async function generate() {
   if (!input) { document.getElementById('userInput').focus(); return; }
 
   const lang = document.getElementById('langSelect').value;
+  const board = document.getElementById('boardSelect').value;
   const subject = document.getElementById('subjectSelect').value;
   const cls = document.getElementById('classSelect').value;
   const t = tools[currentTool];
-  const fullPrompt = t.prompt(lang, subject, cls, input);
+  const fullPrompt = t.prompt(lang, board, subject, cls, input);
 
   document.getElementById('genBtn').disabled = true;
   document.getElementById('placeholder').style.display = 'none';
