@@ -22,7 +22,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'openrouter/auto',
         messages: [{ role: 'user', content: fullPrompt }],
-        max_tokens: 1500,
+        max_tokens: 2500,
         temperature: 0.4
       })
     });
