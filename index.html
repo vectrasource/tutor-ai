@@ -6,6 +6,11 @@
 <title>TutorAI — AI Assistant for Indian Tuition Teachers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<!-- Markdown renderer -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<!-- PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -24,10 +29,13 @@
     --white: #ffffff;
     --radius: 10px;
     --radius-lg: 16px;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
   }
 
   body { font-family: 'DM Sans', sans-serif; background: var(--surface); color: var(--ink); min-height: 100vh; }
 
+  /* NAV */
   nav {
     position: sticky; top: 0; z-index: 100;
     background: rgba(250,250,249,0.95);
@@ -47,28 +55,16 @@
   .nav-name { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--ink); }
   .nav-name span { color: var(--orange); }
   .nav-right { display: flex; align-items: center; gap: 8px; }
-  .nav-badge {
-    font-size: 11px; padding: 3px 10px;
-    background: var(--orange-light); color: var(--orange);
-    border: 1px solid var(--orange-mid);
-    border-radius: 20px; font-weight: 700;
-  }
-  .nav-india {
-    font-size: 11px; padding: 3px 10px;
-    background: var(--purple-light); color: var(--purple);
-    border-radius: 20px; font-weight: 500;
-  }
+  .nav-badge { font-size: 11px; padding: 3px 10px; background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange-mid); border-radius: 20px; font-weight: 700; }
+  .nav-india { font-size: 11px; padding: 3px 10px; background: var(--purple-light); color: var(--purple); border-radius: 20px; font-weight: 500; }
 
   /* HERO */
   .hero {
-    text-align: center;
-    padding: 4.5rem 1.5rem 2.5rem;
-    max-width: 760px; margin: 0 auto;
-    position: relative;
+    text-align: center; padding: 4.5rem 1.5rem 2.5rem;
+    max-width: 760px; margin: 0 auto; position: relative;
   }
   .hero::before {
-    content: '';
-    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
     width: 700px; height: 350px;
     background: radial-gradient(ellipse at center, rgba(249,115,22,0.07) 0%, transparent 70%);
     pointer-events: none;
@@ -76,53 +72,29 @@
   .hero-pill {
     display: inline-flex; align-items: center; gap: 6px;
     background: linear-gradient(135deg, var(--orange), var(--purple));
-    color: var(--white);
-    font-size: 12px; font-weight: 500;
-    padding: 5px 16px; border-radius: 20px;
-    margin-bottom: 1.5rem; letter-spacing: 0.3px;
+    color: var(--white); font-size: 12px; font-weight: 500;
+    padding: 5px 16px; border-radius: 20px; margin-bottom: 1.5rem; letter-spacing: 0.3px;
   }
   h1 {
     font-family: 'Syne', sans-serif;
     font-size: clamp(30px, 5.5vw, 50px);
     font-weight: 800; line-height: 1.12;
-    color: var(--ink); margin-bottom: 1rem;
-    letter-spacing: -1px;
+    color: var(--ink); margin-bottom: 1rem; letter-spacing: -1px;
   }
   h1 em { color: var(--orange); font-style: normal; }
   h1 .hl {
     background: linear-gradient(135deg, var(--orange), var(--purple));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
-  .hero-sub {
-    font-size: 16px; color: var(--ink-mid);
-    line-height: 1.7; margin-bottom: 1.5rem;
-    max-width: 540px; margin-left: auto; margin-right: auto;
-  }
-
-  /* LANGUAGE PILLS */
-  .lang-pills {
-    display: flex; justify-content: center; gap: 8px;
-    flex-wrap: wrap; margin-bottom: 2.5rem;
-  }
-  .lang-pill {
-    font-size: 12px; padding: 4px 14px;
-    background: var(--white); border: 1px solid var(--border);
-    border-radius: 20px; color: var(--ink-mid); font-weight: 500;
-  }
-
-  /* STATS */
-  .stats-row {
-    display: flex; justify-content: center; gap: 2.5rem;
-    margin-bottom: 3rem; flex-wrap: wrap;
-  }
+  .hero-sub { font-size: 16px; color: var(--ink-mid); line-height: 1.7; margin-bottom: 1.5rem; max-width: 540px; margin-left: auto; margin-right: auto; }
+  .lang-pills { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .lang-pill { font-size: 12px; padding: 4px 14px; background: var(--white); border: 1px solid var(--border); border-radius: 20px; color: var(--ink-mid); font-weight: 500; }
+  .stats-row { display: flex; justify-content: center; gap: 2.5rem; margin-bottom: 3rem; flex-wrap: wrap; }
   .stat { text-align: center; }
   .stat-num {
     font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800;
     background: linear-gradient(135deg, var(--orange), var(--purple));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
   .stat-label { font-size: 11px; color: var(--ink-light); margin-top: 2px; }
 
@@ -130,25 +102,16 @@
   .app-container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem 5rem; }
 
   /* TOOL GRID */
-  .tool-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px; margin-bottom: 1.5rem;
-  }
+  .tool-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.5rem; }
   @media (min-width: 560px) { .tool-grid { grid-template-columns: repeat(4, 1fr); } }
-
   .tool-btn {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 16px 12px;
-    cursor: pointer; text-align: left;
-    transition: all 0.15s;
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg); padding: 16px 12px;
+    cursor: pointer; text-align: left; transition: all 0.15s;
     position: relative; overflow: hidden;
   }
   .tool-btn::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
     background: linear-gradient(90deg, var(--orange), var(--purple));
     transform: scaleX(0); transition: transform 0.2s; transform-origin: left;
   }
@@ -162,19 +125,17 @@
 
   /* FORM */
   .form-card {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem; margin-bottom: 1rem;
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1rem;
     box-shadow: 0 2px 16px rgba(0,0,0,0.04);
   }
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
   .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
   .form-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-  @media (max-width: 560px) { .form-grid-4 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .form-grid-4 { grid-template-columns: 1fr 1fr; } .form-grid-3 { grid-template-columns: 1fr 1fr; } }
   .form-row { margin-bottom: 14px; }
   label { display: block; font-size: 11px; color: var(--ink-light); font-weight: 600; margin-bottom: 5px; letter-spacing: 0.5px; text-transform: uppercase; }
-  select, textarea, input[type="text"] {
+  select, textarea, input[type="text"], input[type="number"] {
     width: 100%; border: 1.5px solid var(--border);
     border-radius: var(--radius); padding: 10px 14px;
     font-size: 13px; font-family: 'DM Sans', sans-serif;
@@ -182,15 +143,28 @@
     outline: none; transition: border-color 0.15s;
   }
   select:focus, textarea:focus, input:focus { border-color: var(--orange); }
-  textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+
+  /* SMART FIELDS — shown/hidden per tool */
+  .smart-fields { margin-bottom: 14px; }
+  .smart-fields.hidden { display: none; }
+
+  /* DIVIDER */
+  .form-divider {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; color: var(--ink-light); font-size: 11px;
+    letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600;
+  }
+  .form-divider::before, .form-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
 
   .gen-btn {
     width: 100%;
     background: linear-gradient(135deg, var(--orange), var(--purple));
     color: white; border: none; border-radius: var(--radius);
     padding: 13px; font-size: 14px; font-weight: 700;
-    cursor: pointer; font-family: 'Syne', sans-serif;
-    letter-spacing: 0.3px;
+    cursor: pointer; font-family: 'Syne', sans-serif; letter-spacing: 0.3px;
     transition: opacity 0.15s, transform 0.1s;
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
@@ -200,59 +174,136 @@
 
   /* OUTPUT */
   .output-card {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
     box-shadow: 0 2px 16px rgba(0,0,0,0.04);
   }
   .output-topbar {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 1.5rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
+    padding: 12px 1.5rem; border-bottom: 1px solid var(--border);
+    background: var(--surface); flex-wrap: wrap; gap: 8px;
   }
   .output-label { font-size: 12px; font-weight: 700; color: var(--ink-mid); font-family: 'Syne', sans-serif; letter-spacing: 0.3px; }
-  .copy-btn {
+  .output-actions { display: flex; gap: 8px; align-items: center; }
+  .action-btn {
     font-size: 12px; color: var(--orange);
     background: none; border: 1.5px solid var(--orange);
     border-radius: 6px; padding: 4px 12px;
     cursor: pointer; font-family: 'DM Sans', sans-serif;
     font-weight: 500; transition: background 0.15s;
+    display: flex; align-items: center; gap: 5px;
+    text-decoration: none;
   }
-  .copy-btn:hover { background: var(--orange-light); }
+  .action-btn:hover { background: var(--orange-light); }
+  .action-btn.whatsapp { color: var(--green); border-color: var(--green); }
+  .action-btn.whatsapp:hover { background: var(--green-light); }
+  .action-btn.pdf { color: var(--purple); border-color: var(--purple); }
+  .action-btn.pdf:hover { background: var(--purple-light); }
+
   .output-body { padding: 1.5rem; min-height: 160px; }
   .output-placeholder { font-size: 13px; color: var(--ink-light); font-style: italic; line-height: 1.7; }
-  .output-text { font-size: 13px; color: var(--ink); line-height: 1.9; white-space: pre-wrap; }
+
+  /* Markdown output styling */
+  .output-md { font-size: 13px; color: var(--ink); line-height: 1.9; }
+  .output-md h1, .output-md h2, .output-md h3 {
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    color: var(--ink); margin: 1.2em 0 0.5em;
+  }
+  .output-md h1 { font-size: 18px; border-bottom: 2px solid var(--orange-light); padding-bottom: 6px; }
+  .output-md h2 { font-size: 15px; color: var(--orange-dark); }
+  .output-md h3 { font-size: 13px; color: var(--ink-mid); }
+  .output-md p { margin-bottom: 0.8em; }
+  .output-md ul, .output-md ol { margin: 0.5em 0 0.8em 1.5em; }
+  .output-md li { margin-bottom: 4px; }
+  .output-md strong { font-weight: 600; color: var(--ink); }
+  .output-md table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 12px; }
+  .output-md th { background: var(--orange-light); color: var(--orange-dark); padding: 8px 12px; text-align: left; font-weight: 700; border: 1px solid var(--orange-mid); }
+  .output-md td { padding: 7px 12px; border: 1px solid var(--border); }
+  .output-md tr:nth-child(even) td { background: var(--surface); }
+  .output-md hr { border: none; border-top: 1px solid var(--border); margin: 1.2em 0; }
+  .output-md code { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 12px; }
+  .output-md blockquote { border-left: 3px solid var(--orange); padding-left: 1em; color: var(--ink-mid); margin: 0.8em 0; }
 
   /* LOADER */
   .loader { display: flex; align-items: center; gap: 10px; padding: 1rem 0; }
   .loader-dots { display: flex; gap: 5px; }
-  .loader-dots span {
-    width: 7px; height: 7px;
-    background: var(--orange); border-radius: 50%;
-    animation: pulse 1.1s infinite ease-in-out;
-  }
+  .loader-dots span { width: 7px; height: 7px; background: var(--orange); border-radius: 50%; animation: pulse 1.1s infinite ease-in-out; }
   .loader-dots span:nth-child(2) { animation-delay: 0.2s; background: var(--purple); }
   .loader-dots span:nth-child(3) { animation-delay: 0.4s; }
   @keyframes pulse { 0%,80%,100%{transform:scale(0.5);opacity:0.3} 40%{transform:scale(1);opacity:1} }
   .loader-text { font-size: 13px; color: var(--ink-light); }
+
+  /* HISTORY */
+  .history-section { margin-top: 1.5rem; }
+  .history-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .history-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--ink-mid); }
+  .history-clear { font-size: 11px; color: var(--ink-light); background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .history-clear:hover { color: var(--orange); }
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-item {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 12px 14px;
+    cursor: pointer; transition: border-color 0.15s;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .history-item:hover { border-color: var(--orange); }
+  .history-item-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .history-item-emoji { font-size: 18px; flex-shrink: 0; }
+  .history-item-info { min-width: 0; }
+  .history-item-title { font-size: 12px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-item-meta { font-size: 11px; color: var(--ink-light); margin-top: 2px; }
+  .history-item-arrow { font-size: 14px; color: var(--ink-light); flex-shrink: 0; }
 
   /* DISCLAIMER */
   .disclaimer {
     margin-top: 1.5rem; padding: 1rem 1.25rem;
     background: #fffdf0; border: 1px solid #e8d97a;
     border-radius: var(--radius); font-size: 11px;
-    color: #7a6a10; line-height: 1.7;
-    display: flex; gap: 8px;
+    color: #7a6a10; line-height: 1.7; display: flex; gap: 8px;
   }
 
+  /* FEEDBACK */
+  .feedback-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 1.5rem; border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .feedback-label { font-size: 11px; color: var(--ink-light); }
+  .feedback-btn {
+    background: none; border: 1.5px solid var(--border);
+    border-radius: 6px; padding: 3px 10px;
+    font-size: 14px; cursor: pointer; transition: all 0.15s;
+  }
+  .feedback-btn:hover { border-color: var(--orange); background: var(--orange-light); }
+  .feedback-btn.selected { border-color: var(--orange); background: var(--orange-light); }
+
   footer {
-    text-align: center; padding: 2rem;
-    font-size: 12px; color: var(--ink-light);
+    text-align: center; padding: 2rem; font-size: 12px; color: var(--ink-light);
     border-top: 1px solid var(--border); margin-top: 2rem;
   }
   footer strong { color: var(--orange); font-family: 'Syne', sans-serif; }
+
+  /* PDF print area (hidden) */
+  #pdfContent {
+    display: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #1C1917;
+    padding: 20px;
+  }
+  #pdfContent h1, #pdfContent h2, #pdfContent h3 { font-family: 'Syne', sans-serif; font-weight: 700; margin: 1em 0 0.4em; }
+  #pdfContent h1 { font-size: 18px; border-bottom: 2px solid #F97316; padding-bottom: 6px; }
+  #pdfContent h2 { font-size: 15px; color: #C2570A; }
+  #pdfContent table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  #pdfContent th { background: #FFF7ED; padding: 8px; text-align: left; border: 1px solid #FDBA74; }
+  #pdfContent td { padding: 7px; border: 1px solid #e5e5e5; }
+  #pdfContent .pdf-header { border-bottom: 2px solid #F97316; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start; }
+  #pdfContent .pdf-brand { font-family: 'Syne', sans-serif; font-weight: 800; color: #F97316; font-size: 16px; }
+  #pdfContent .pdf-meta { font-size: 11px; color: #78716C; text-align: right; }
 </style>
 </head>
 <body>
@@ -271,29 +322,19 @@
 <div class="hero">
   <div class="hero-pill">📚 Built for Indian Tuition Teachers</div>
   <h1>Your AI teaching assistant —<br/><span class="hl">in your language</span></h1>
-  <p class="hero-sub">Question papers, study notes, parent letters, lesson plans — generated in seconds. In 5 Indian languages. For every subject, every class.</p>
-
+  <p class="hero-sub">Question papers, study notes, parent letters, lesson plans — generated in seconds. In 6 Indian languages. For every subject, every class.</p>
   <div class="lang-pills">
     <div class="lang-pill">🌴 Malayalam</div>
     <div class="lang-pill">🌸 Hindi</div>
     <div class="lang-pill">🌺 Tamil</div>
     <div class="lang-pill">🌿 Telugu</div>
+    <div class="lang-pill">🌾 Kannada</div>
     <div class="lang-pill">🇬🇧 English</div>
   </div>
-
   <div class="stats-row">
-    <div class="stat">
-      <div class="stat-num">6</div>
-      <div class="stat-label">AI Tools</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num">5</div>
-      <div class="stat-label">Languages</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num">All</div>
-      <div class="stat-label">Subjects & Classes</div>
-    </div>
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">AI Tools</div></div>
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">Languages</div></div>
+    <div class="stat"><div class="stat-num">All</div><div class="stat-label">Subjects & Classes</div></div>
   </div>
 </div>
 
@@ -343,6 +384,7 @@
           <option value="Hindi">Hindi (हिंदी)</option>
           <option value="Tamil">Tamil (தமிழ்)</option>
           <option value="Telugu">Telugu (తెలుగు)</option>
+          <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
         </select>
       </div>
       <div>
@@ -391,10 +433,184 @@
         </select>
       </div>
     </div>
-    <div class="form-row">
-      <label id="inputLabel">Describe what you need</label>
-      <textarea id="userInput" placeholder="E.g. Chapter: Quadratic Equations. Total marks: 40. Include 5 MCQ, 3 short answer, 2 long answer questions. Medium difficulty..."></textarea>
+
+    <!-- SMART FIELDS: Question Paper -->
+    <div class="smart-fields" id="fields-paper">
+      <div class="form-divider">Paper Settings</div>
+      <div class="form-grid-3">
+        <div>
+          <label for="p-topic">Chapter / Topic</label>
+          <input type="text" id="p-topic" placeholder="e.g. Quadratic Equations" />
+        </div>
+        <div>
+          <label for="p-marks">Total Marks</label>
+          <input type="number" id="p-marks" placeholder="e.g. 40" min="10" max="100" />
+        </div>
+        <div>
+          <label for="p-duration">Duration</label>
+          <select id="p-duration">
+            <option value="30 minutes">30 minutes</option>
+            <option value="1 hour" selected>1 hour</option>
+            <option value="1.5 hours">1.5 hours</option>
+            <option value="2 hours">2 hours</option>
+            <option value="2.5 hours">2.5 hours</option>
+            <option value="3 hours">3 hours</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid-3">
+        <div>
+          <label for="p-mcq">No. of MCQ</label>
+          <input type="number" id="p-mcq" placeholder="e.g. 5" min="0" max="30" />
+        </div>
+        <div>
+          <label for="p-short">No. of Short Ans.</label>
+          <input type="number" id="p-short" placeholder="e.g. 3" min="0" max="20" />
+        </div>
+        <div>
+          <label for="p-long">No. of Long Ans.</label>
+          <input type="number" id="p-long" placeholder="e.g. 2" min="0" max="10" />
+        </div>
+      </div>
+      <div class="form-grid">
+        <div>
+          <label for="p-difficulty">Difficulty</label>
+          <select id="p-difficulty">
+            <option value="Easy">Easy</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="Hard">Hard</option>
+            <option value="Mixed (Easy + Medium + Hard)">Mixed</option>
+          </select>
+        </div>
+        <div>
+          <label for="p-extra">Additional Instructions</label>
+          <input type="text" id="p-extra" placeholder="e.g. Include answer key" />
+        </div>
+      </div>
     </div>
+
+    <!-- SMART FIELDS: Study Notes -->
+    <div class="smart-fields hidden" id="fields-notes">
+      <div class="form-divider">Notes Settings</div>
+      <div class="form-grid">
+        <div>
+          <label for="n-topic">Chapter / Topic</label>
+          <input type="text" id="n-topic" placeholder="e.g. Photosynthesis" />
+        </div>
+        <div>
+          <label for="n-style">Note Style</label>
+          <select id="n-style">
+            <option value="detailed with explanations">Detailed</option>
+            <option value="brief bullet-point summary">Brief Bullets</option>
+            <option value="exam-focused key points only">Exam Focus</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="n-extra">Any specific areas to cover?</label>
+        <textarea id="n-extra" placeholder="e.g. Focus on diagrams, definitions, and likely exam questions..." style="min-height:60px"></textarea>
+      </div>
+    </div>
+
+    <!-- SMART FIELDS: Parent Letter -->
+    <div class="smart-fields hidden" id="fields-parent">
+      <div class="form-divider">Student Details</div>
+      <div class="form-grid">
+        <div>
+          <label for="pl-name">Student Name</label>
+          <input type="text" id="pl-name" placeholder="e.g. Rahul Kumar" />
+        </div>
+        <div>
+          <label for="pl-tone">Letter Tone</label>
+          <select id="pl-tone">
+            <option value="positive and encouraging">Positive & Encouraging</option>
+            <option value="neutral progress update">Neutral Update</option>
+            <option value="concerned but supportive">Concern + Support</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="pl-details">Student's performance & what to communicate</label>
+        <textarea id="pl-details" placeholder="e.g. Doing well in Maths but struggling in Science. Attendance is good. Next exam in 2 weeks. Needs more practice at home..."></textarea>
+      </div>
+    </div>
+
+    <!-- SMART FIELDS: Lesson Plan -->
+    <div class="smart-fields hidden" id="fields-lesson">
+      <div class="form-divider">Lesson Plan Settings</div>
+      <div class="form-grid-3">
+        <div>
+          <label for="lp-topic">Topics to Cover</label>
+          <input type="text" id="lp-topic" placeholder="e.g. Trigonometry basics" />
+        </div>
+        <div>
+          <label for="lp-days">Number of Days</label>
+          <input type="number" id="lp-days" placeholder="e.g. 10" min="1" max="30" />
+        </div>
+        <div>
+          <label for="lp-duration">Session Duration</label>
+          <select id="lp-duration">
+            <option value="45 minutes">45 minutes</option>
+            <option value="1 hour" selected>1 hour</option>
+            <option value="1.5 hours">1.5 hours</option>
+            <option value="2 hours">2 hours</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="lp-extra">Student level & any special notes</label>
+        <textarea id="lp-extra" placeholder="e.g. Students are beginners, no prior knowledge of trigonometry. Mix of Class 10 and 11 students..." style="min-height:60px"></textarea>
+      </div>
+    </div>
+
+    <!-- SMART FIELDS: MCQ -->
+    <div class="smart-fields hidden" id="fields-mcq">
+      <div class="form-divider">MCQ Settings</div>
+      <div class="form-grid-3">
+        <div>
+          <label for="mcq-topic">Topic / Chapter</label>
+          <input type="text" id="mcq-topic" placeholder="e.g. Human Digestive System" />
+        </div>
+        <div>
+          <label for="mcq-count">Number of Questions</label>
+          <input type="number" id="mcq-count" placeholder="e.g. 20" min="5" max="50" />
+        </div>
+        <div>
+          <label for="mcq-difficulty">Difficulty</label>
+          <select id="mcq-difficulty">
+            <option value="Easy">Easy</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="Hard">Hard</option>
+            <option value="Mixed">Mixed</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="mcq-extra">Any extra instructions?</label>
+        <input type="text" id="mcq-extra" placeholder="e.g. Include answer key, focus on Class 10 board exam style" />
+      </div>
+    </div>
+
+    <!-- SMART FIELDS: Explainer -->
+    <div class="smart-fields hidden" id="fields-explain">
+      <div class="form-divider">Explanation Settings</div>
+      <div class="form-grid">
+        <div>
+          <label for="ex-topic">Topic / Concept</label>
+          <input type="text" id="ex-topic" placeholder="e.g. Photosynthesis, Newton's Laws..." />
+        </div>
+        <div>
+          <label for="ex-style">Explain As</label>
+          <select id="ex-style">
+            <option value="simple and beginner-friendly">Simple / Beginner</option>
+            <option value="with real-life Indian examples">With Indian Examples</option>
+            <option value="exam-focused with key points">Exam-focused</option>
+            <option value="story-based with an analogy">Story / Analogy</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <button class="gen-btn" id="genBtn" onclick="generate()">✦ Generate</button>
   </div>
 
@@ -402,16 +618,34 @@
   <div class="output-card">
     <div class="output-topbar">
       <div class="output-label">✦ AI OUTPUT</div>
-      <button class="copy-btn" id="copyBtn" onclick="copyOutput()" style="display:none">Copy</button>
+      <div class="output-actions" id="outputActions" style="display:none">
+        <button class="action-btn" id="copyBtn" onclick="copyOutput()">📋 Copy</button>
+        <button class="action-btn pdf" onclick="downloadPDF()">⬇ PDF</button>
+        <a class="action-btn whatsapp" id="waBtn" href="#" target="_blank">💬 WhatsApp</a>
+      </div>
     </div>
     <div class="output-body">
       <div class="loader" id="loaderEl" style="display:none">
         <div class="loader-dots"><span></span><span></span><span></span></div>
         <span class="loader-text" id="loaderText">Generating your content...</span>
       </div>
-      <div class="output-placeholder" id="placeholder">Your AI-generated teaching material will appear here. Pick a tool above and describe what you need.</div>
-      <div class="output-text" id="outputText" style="display:none"></div>
+      <div class="output-placeholder" id="placeholder">Your AI-generated teaching material will appear here. Pick a tool above and fill in the details.</div>
+      <div class="output-md" id="outputText" style="display:none"></div>
     </div>
+    <div class="feedback-row" id="feedbackRow" style="display:none">
+      <span class="feedback-label">Was this helpful?</span>
+      <button class="feedback-btn" onclick="giveFeedback(this,'👍')" title="Helpful">👍</button>
+      <button class="feedback-btn" onclick="giveFeedback(this,'👎')" title="Not helpful">👎</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history-section" id="historySection" style="display:none">
+    <div class="history-header">
+      <div class="history-title">🕐 Recent Generations</div>
+      <button class="history-clear" onclick="clearHistory()">Clear all</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
   </div>
 
   <div class="disclaimer">
@@ -421,186 +655,295 @@
 
 </div>
 
+<!-- Hidden PDF render area -->
+<div id="pdfContent"></div>
+
 <footer>
   <strong>TutorAI</strong> — Part of Vectrasource Digital Suite &nbsp;·&nbsp; Built for Indian Teachers
 </footer>
 
 <script>
+// ============================================
+// TOOL CONFIG
+// ============================================
 const tools = {
   paper: {
-    label: 'Describe the question paper you need',
-    placeholder: 'E.g. Chapter: Quadratic Equations. Total marks: 40. Include 5 MCQ, 3 short answer, 2 long answer. Medium difficulty...',
+    emoji: '📝',
     loaderText: 'Generating question paper...',
-    prompt: (lang, board, subject, cls, input) => `You are TutorAI, an expert teaching assistant for Indian tuition teachers. Generate a complete question paper in ${lang} for ${subject}, ${cls} following ${board} curriculum and question paper format.
+    buildPrompt(lang, board, subject, cls) {
+      const topic = document.getElementById('p-topic').value || 'Full syllabus';
+      const marks = document.getElementById('p-marks').value || '40';
+      const duration = document.getElementById('p-duration').value;
+      const mcq = document.getElementById('p-mcq').value || '5';
+      const shortAns = document.getElementById('p-short').value || '3';
+      const longAns = document.getElementById('p-long').value || '2';
+      const difficulty = document.getElementById('p-difficulty').value;
+      const extra = document.getElementById('p-extra').value;
+      return `You are TutorAI, an expert teaching assistant for Indian tuition teachers. Generate a complete, well-formatted question paper in ${lang} for ${subject}, ${cls} following ${board} curriculum.
 
-Requirements: ${input}
+Settings:
+- Topic/Chapter: ${topic}
+- Total Marks: ${marks}
+- Duration: ${duration}
+- MCQ questions: ${mcq}
+- Short answer questions: ${shortAns}
+- Long answer questions: ${longAns}
+- Difficulty: ${difficulty}
+- Extra instructions: ${extra || 'Include an answer key at the end'}
 
-Format the paper as:
-SCHOOL/TUITION NAME: [Name]
-SUBJECT: ${subject}
-CLASS: ${cls}
-TIME: [Duration]
-TOTAL MARKS: [Marks]
+Format using markdown:
+# [School Name] — Question Paper
+**Subject:** ${subject} | **Class:** ${cls} | **Marks:** ${marks} | **Time:** ${duration}
 
-SECTION A — MCQ (if requested)
-1. Question... (a) (b) (c) (d)
+---
 
-SECTION B — Short Answer
-1. Question... [Marks]
+## Section A — MCQ (1 mark each)
+1. Question... 
+   - (a) Option
+   - (b) Option
+   - (c) Option
+   - (d) Option
 
-SECTION C — Long Answer
-1. Question... [Marks]
+## Section B — Short Answer
+**Q1.** Question... *(${Math.round(parseInt(marks)*0.3/parseInt(shortAns||1))} marks)*
 
-Write all questions in ${lang}. IMPORTANT: Write all mathematical expressions in plain text only — do NOT use LaTeX or $ symbols. Write formulas like: a(n) = a + (n-1)d, S(n) = n/2 x (2a + (n-1)d). Use ^ for powers e.g. x^2. Keep it readable as plain text. For the answer key, keep answers concise — just the final answer and one line working. Do not repeat the full question in the answer key.`
+## Section C — Long Answer
+**Q1.** Question... *(${Math.round(parseInt(marks)*0.4/parseInt(longAns||1))} marks)*
+
+---
+
+## Answer Key
+| Q | Answer |
+|---|--------|
+| 1 | (b) ... |
+
+Write all question content in ${lang}. Write formulas in plain text (e.g. x^2 + 5x + 6 = 0). No LaTeX or dollar signs.`;
+    }
   },
   notes: {
-    label: 'Which chapter or topic do you need notes for?',
-    placeholder: 'E.g. Chapter: Photosynthesis. Need detailed notes with diagrams description, key points, and summary...',
+    emoji: '📖',
     loaderText: 'Creating study notes...',
-    prompt: (lang, board, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Create comprehensive study notes in ${lang} for ${subject}, ${cls} as per ${board} syllabus.
+    buildPrompt(lang, board, subject, cls) {
+      const topic = document.getElementById('n-topic').value || 'Chapter';
+      const style = document.getElementById('n-style').value;
+      const extra = document.getElementById('n-extra').value;
+      return `You are TutorAI for Indian tuition teachers. Create ${style} study notes in ${lang} for **${topic}** — ${subject}, ${cls}, ${board} syllabus.
+${extra ? 'Special focus: ' + extra : ''}
 
-Topic: ${input}
+Use this markdown structure:
+# ${topic} — Study Notes
+**Subject:** ${subject} | **Class:** ${cls} | **Board:** ${board}
 
-Structure:
-1. INTRODUCTION — What is this topic about
-2. KEY CONCEPTS — Main points with clear explanations
-3. IMPORTANT DEFINITIONS — Terms students must know
-4. DIAGRAMS/CHARTS — Describe any important visuals
-5. EXAMPLES — Solved examples where applicable
-6. REMEMBER POINTS — Quick revision bullets
-7. PROBABLE EXAM QUESTIONS — 3-5 likely questions
+---
 
-Write in clear ${lang} appropriate for ${cls} students. Use simple language, avoid unnecessary complexity.`
+## 1. Introduction
+## 2. Key Concepts
+## 3. Important Definitions
+## 4. Examples / Diagrams
+## 5. Quick Revision Points
+> Bullet the most important facts here
+
+## 6. Probable Exam Questions
+1. ...
+2. ...
+
+Write in clear ${lang} appropriate for ${cls} students.`;
+    }
   },
   parent: {
-    label: 'Describe the student and what to communicate',
-    placeholder: 'E.g. Student Rahul, Class 8, doing well in Math but struggling in Science. Attendance good. Next exam in 2 weeks, needs more practice...',
+    emoji: '👨‍👩‍👧',
     loaderText: 'Writing parent letter...',
-    prompt: (lang, board, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Write a professional parent progress letter in ${lang} for a ${board} student.
+    buildPrompt(lang, board, subject, cls) {
+      const name = document.getElementById('pl-name').value || 'Student';
+      const tone = document.getElementById('pl-tone').value;
+      const details = document.getElementById('pl-details').value;
+      return `You are TutorAI for Indian tuition teachers. Write a ${tone} parent progress letter in ${lang} for student **${name}**, ${cls}, ${board}.
 
-Student details: ${input}
-Subject focus: ${subject}
-Class: ${cls}
+Details: ${details || 'General progress update'}
+
+Use this format:
+# Parent Progress Letter — ${name}
+
+**Date:** ___________
+**To:** Parent/Guardian of ${name}
+
+Dear Parent/Guardian,
+
+[Letter body — warm, professional, honest in ${lang}]
 
 Include:
-1. Tuition center name placeholder
-2. Date placeholder
-3. Dear Parent/Guardian
-4. Student's current performance summary
-5. Strengths observed
-6. Areas needing improvement
-7. Specific suggestions for home practice
-8. Upcoming test/exam information if any
-9. Request for parent cooperation
-10. Teacher name and signature placeholder
+- Current academic performance in ${subject}
+- Strengths observed
+- Areas needing improvement
+- Specific home practice suggestions
+- Any upcoming test information
+- Request for parent cooperation
 
-Write in warm, professional ${lang} that Indian parents can relate to. Be encouraging but honest.`
+**Regards,**
+[Teacher Name]
+[Tuition Center Name]`;
+    }
   },
   lesson: {
-    label: 'What topics to cover and for how many days?',
-    placeholder: 'E.g. Cover Trigonometry basics for Class 10 over 2 weeks. 1 hour sessions daily. Students are beginners in this topic...',
+    emoji: '🗓️',
     loaderText: 'Building lesson plan...',
-    prompt: (lang, board, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Create a detailed lesson plan in ${lang} for ${subject}, ${cls} following ${board} curriculum.
+    buildPrompt(lang, board, subject, cls) {
+      const topic = document.getElementById('lp-topic').value || 'Topic';
+      const days = document.getElementById('lp-days').value || '5';
+      const duration = document.getElementById('lp-duration').value;
+      const extra = document.getElementById('lp-extra').value;
+      return `You are TutorAI for Indian tuition teachers. Create a ${days}-day lesson plan in ${lang} for **${topic}** — ${subject}, ${cls}, ${board}.
+Each session: ${duration}. ${extra ? 'Note: ' + extra : ''}
 
-Requirements: ${input}
+Format:
+# Lesson Plan — ${topic}
+**Subject:** ${subject} | **Class:** ${cls} | **Duration:** ${days} days × ${duration}
 
-For each day/session include:
-DAY 1:
-- Topic:
-- Learning Objectives:
-- Teaching Method:
-- Activities:
-- Homework:
-- Materials needed:
+---
+
+## Day 1 — [Topic Name]
+| | |
+|---|---|
+| **Learning Objectives** | ... |
+| **Teaching Method** | ... |
+| **Activities** | ... |
+| **Homework** | ... |
+| **Materials** | ... |
 
 (Repeat for each day)
 
-END OF PLAN:
-- Revision strategy
-- Assessment plan
-- Expected outcomes
+---
 
-Write in ${lang}. Make it practical and implementable for an Indian tuition teacher.`
+## Assessment & Revision Plan
+## Expected Outcomes
+
+Write in ${lang}.`;
+    }
   },
   mcq: {
-    label: 'Topic and number of questions needed',
-    placeholder: 'E.g. Topic: Human Digestive System. Need 20 MCQ questions. Mix of easy, medium and hard. With answer key...',
+    emoji: '✅',
     loaderText: 'Generating MCQ questions...',
-    prompt: (lang, board, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Generate multiple choice questions (MCQ) in ${lang} for ${subject}, ${cls} as per ${board} syllabus.
+    buildPrompt(lang, board, subject, cls) {
+      const topic = document.getElementById('mcq-topic').value || 'Topic';
+      const count = document.getElementById('mcq-count').value || '20';
+      const difficulty = document.getElementById('mcq-difficulty').value;
+      const extra = document.getElementById('mcq-extra').value;
+      return `You are TutorAI for Indian tuition teachers. Generate ${count} ${difficulty} MCQ questions in ${lang} for **${topic}** — ${subject}, ${cls}, ${board}.
+${extra || 'Include an answer key table at the end.'}
 
-Requirements: ${input}
+Format:
+# MCQ — ${topic}
+**Subject:** ${subject} | **Class:** ${cls} | **Total:** ${count} questions
 
-Format each question as:
-Q1. [Question text]
-(a) [Option]
-(b) [Option]
-(c) [Option]
-(d) [Option]
+---
 
-After all questions, provide:
-ANSWER KEY:
-1-a, 2-c, 3-b... etc
+**Q1.** [Question text]
+- (a) Option A
+- (b) Option B
+- (c) Option C
+- (d) Option D
 
-Write all questions in ${lang}. Make questions curriculum-appropriate for Indian education. Vary difficulty levels. Avoid trick questions.`
+(Continue for all ${count} questions)
+
+---
+
+## Answer Key
+| Q | Ans | Q | Ans |
+|---|-----|---|-----|
+| 1 | (b) | 2 | (a) |
+
+Write questions in ${lang}. Vary difficulty within ${difficulty} level.`;
+    }
   },
   explain: {
-    label: 'Which topic or concept needs to be explained?',
-    placeholder: 'E.g. Explain the concept of Photosynthesis in a simple way that Class 6 students can understand easily...',
+    emoji: '💡',
     loaderText: 'Creating explanation...',
-    prompt: (lang, board, subject, cls, input) => `You are TutorAI for Indian tuition teachers. Write a simple, clear explanation in ${lang} for ${subject}, ${cls} students following ${board} curriculum.
+    buildPrompt(lang, board, subject, cls) {
+      const topic = document.getElementById('ex-topic').value || 'Topic';
+      const style = document.getElementById('ex-style').value;
+      return `You are TutorAI for Indian tuition teachers. Write a ${style} explanation in ${lang} for **${topic}** — ${subject}, ${cls}, ${board}.
 
-Topic to explain: ${input}
+Format:
+# ${topic} — Explained Simply
+**Level:** ${cls} | **Style:** ${style}
 
-Structure:
-1. SIMPLE DEFINITION — One line, very clear
-2. REAL LIFE EXAMPLE — Something students see in daily life in India
-3. STEP BY STEP EXPLANATION — Break it down simply
-4. ANALOGY — Compare to something familiar
-5. KEY POINTS TO REMEMBER — 3-5 bullets
-6. COMMON MISTAKES — What students often get wrong
+---
 
-Write in ${lang} appropriate for ${cls} level. Use simple words. Use Indian context examples (Indian cities, food, culture) to make it relatable.`
+## What is ${topic}?
+(One clear sentence)
+
+## Real-Life Example
+(Use an Indian context — Indian cities, food, daily life)
+
+## Step-by-Step Explanation
+1. Step one...
+2. Step two...
+
+## Analogy
+(Compare to something ${cls} students know well)
+
+## Key Points to Remember
+- Point 1
+- Point 2
+- Point 3
+
+## Common Mistakes to Avoid
+> ❌ Wrong: ...
+> ✅ Correct: ...
+
+Write in ${lang} appropriate for ${cls} students.`;
+    }
   }
 };
 
 let currentTool = 'paper';
+let currentRawText = '';
 
+// ============================================
+// TOOL SELECTION
+// ============================================
 function selectTool(btn) {
   document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   currentTool = btn.dataset.tool;
-  const t = tools[currentTool];
-  document.getElementById('inputLabel').textContent = t.label;
-  document.getElementById('userInput').placeholder = t.placeholder;
-  document.getElementById('userInput').value = '';
+
+  // Show/hide smart fields
+  document.querySelectorAll('.smart-fields').forEach(el => el.classList.add('hidden'));
+  const fields = document.getElementById('fields-' + currentTool);
+  if (fields) fields.classList.remove('hidden');
+
   resetOutput();
 }
 
 function resetOutput() {
   document.getElementById('outputText').style.display = 'none';
-  document.getElementById('outputText').textContent = '';
+  document.getElementById('outputText').innerHTML = '';
   document.getElementById('placeholder').style.display = 'block';
-  document.getElementById('copyBtn').style.display = 'none';
+  document.getElementById('outputActions').style.display = 'none';
   document.getElementById('loaderEl').style.display = 'none';
+  document.getElementById('feedbackRow').style.display = 'none';
+  currentRawText = '';
 }
 
+// ============================================
+// GENERATE
+// ============================================
 async function generate() {
   if (!checkPaywall()) return;
-  const input = document.getElementById('userInput').value.trim();
-  if (!input) { document.getElementById('userInput').focus(); return; }
 
   const lang = document.getElementById('langSelect').value;
   const board = document.getElementById('boardSelect').value;
   const subject = document.getElementById('subjectSelect').value;
   const cls = document.getElementById('classSelect').value;
-  const t = tools[currentTool];
-  const fullPrompt = t.prompt(lang, board, subject, cls, input);
+
+  const fullPrompt = tools[currentTool].buildPrompt(lang, board, subject, cls);
 
   document.getElementById('genBtn').disabled = true;
   document.getElementById('placeholder').style.display = 'none';
   document.getElementById('outputText').style.display = 'none';
-  document.getElementById('copyBtn').style.display = 'none';
-  document.getElementById('loaderText').textContent = t.loaderText;
+  document.getElementById('outputActions').style.display = 'none';
+  document.getElementById('feedbackRow').style.display = 'none';
+  document.getElementById('loaderText').textContent = tools[currentTool].loaderText;
   document.getElementById('loaderEl').style.display = 'flex';
 
   try {
@@ -614,35 +957,165 @@ async function generate() {
     if (data.error) throw new Error(data.error.message || data.error);
 
     const text = data.text || 'No output received.';
+    currentRawText = text;
+
     document.getElementById('loaderEl').style.display = 'none';
-    document.getElementById('outputText').textContent = text;
+    document.getElementById('outputText').innerHTML = marked.parse(text);
     document.getElementById('outputText').style.display = 'block';
-    document.getElementById('copyBtn').style.display = 'block';
+    document.getElementById('outputActions').style.display = 'flex';
+    document.getElementById('feedbackRow').style.display = 'flex';
+
+    // WhatsApp share
+    const waText = encodeURIComponent(text.slice(0, 1000) + (text.length > 1000 ? '\n\n[Generated by TutorAI — tutor-ai-beryl-three.vercel.app]' : ''));
+    document.getElementById('waBtn').href = `https://wa.me/?text=${waText}`;
+
+    // Save to history
+    saveToHistory(currentTool, lang, subject, cls, text);
+    renderHistory();
+
   } catch (e) {
     document.getElementById('loaderEl').style.display = 'none';
-    document.getElementById('outputText').textContent = 'Error: ' + e.message;
+    document.getElementById('outputText').innerHTML = `<p style="color:red">Error: ${e.message}</p>`;
     document.getElementById('outputText').style.display = 'block';
   }
 
   document.getElementById('genBtn').disabled = false;
 }
 
+// ============================================
+// COPY
+// ============================================
 function copyOutput() {
-  const text = document.getElementById('outputText').textContent;
-  navigator.clipboard.writeText(text).then(() => {
+  navigator.clipboard.writeText(currentRawText).then(() => {
     const btn = document.getElementById('copyBtn');
-    btn.textContent = 'Copied!';
-    setTimeout(() => btn.textContent = 'Copy', 2000);
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy', 2000);
   });
 }
-</script>
 
-<script>
 // ============================================
-// VECTRASOURCE FREEMIUM PAYWALL
-// 5 free trials then paywall
+// PDF DOWNLOAD
 // ============================================
+function downloadPDF() {
+  const tool = tools[currentTool];
+  const lang = document.getElementById('langSelect').value;
+  const subject = document.getElementById('subjectSelect').value;
+  const cls = document.getElementById('classSelect').value;
+  const now = new Date().toLocaleDateString('en-IN');
 
+  const pdfEl = document.getElementById('pdfContent');
+  pdfEl.innerHTML = `
+    <div class="pdf-header">
+      <div>
+        <div class="pdf-brand">📚 TutorAI</div>
+        <div style="font-size:11px;color:#78716C;margin-top:4px">Vectrasource Digital Suite</div>
+      </div>
+      <div class="pdf-meta">
+        <div>${subject} · ${cls}</div>
+        <div>Language: ${lang}</div>
+        <div>Generated: ${now}</div>
+      </div>
+    </div>
+    ${marked.parse(currentRawText)}
+  `;
+
+  const opt = {
+    margin: [15, 15, 15, 15],
+    filename: `TutorAI_${currentTool}_${subject}_${cls}_${now.replace(/\//g,'-')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  pdfEl.style.display = 'block';
+  html2pdf().set(opt).from(pdfEl).save().then(() => {
+    pdfEl.style.display = 'none';
+  });
+}
+
+// ============================================
+// FEEDBACK
+// ============================================
+function giveFeedback(btn, type) {
+  document.querySelectorAll('.feedback-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  // Could send to analytics in future
+}
+
+// ============================================
+// HISTORY (localStorage, last 5)
+// ============================================
+const HISTORY_KEY = 'tutorai_history';
+
+function saveToHistory(tool, lang, subject, cls, text) {
+  let history = getHistory();
+  history.unshift({
+    tool,
+    lang,
+    subject,
+    cls,
+    text,
+    time: Date.now(),
+    preview: text.slice(0, 100)
+  });
+  history = history.slice(0, 5); // keep last 5
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function renderHistory() {
+  const history = getHistory();
+  const section = document.getElementById('historySection');
+  const list = document.getElementById('historyList');
+
+  if (history.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  list.innerHTML = history.map((item, i) => {
+    const t = tools[item.tool];
+    const timeStr = new Date(item.time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    return `
+      <div class="history-item" onclick="loadFromHistory(${i})">
+        <div class="history-item-left">
+          <div class="history-item-emoji">${t ? t.emoji : '📄'}</div>
+          <div class="history-item-info">
+            <div class="history-item-title">${item.subject} · ${item.cls} · ${item.lang}</div>
+            <div class="history-item-meta">${item.tool.charAt(0).toUpperCase() + item.tool.slice(1)} · ${timeStr}</div>
+          </div>
+        </div>
+        <div class="history-item-arrow">→</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function loadFromHistory(index) {
+  const history = getHistory();
+  const item = history[index];
+  if (!item) return;
+  currentRawText = item.text;
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('outputText').innerHTML = marked.parse(item.text);
+  document.getElementById('outputText').style.display = 'block';
+  document.getElementById('outputActions').style.display = 'flex';
+  document.getElementById('feedbackRow').style.display = 'flex';
+  const waText = encodeURIComponent(item.text.slice(0, 1000));
+  document.getElementById('waBtn').href = `https://wa.me/?text=${waText}`;
+  window.scrollTo({ top: document.querySelector('.output-card').offsetTop - 80, behavior: 'smooth' });
+}
+
+function clearHistory() {
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+}
+
+// ============================================
+// PAYWALL — FIXED: check before increment
+// ============================================
 const PAYWALL_CONFIG = {
   freeLimit: 5,
   productKey: 'tutorai',
@@ -656,13 +1129,11 @@ const PAYWALL_CONFIG = {
 function getUsageCount() {
   return parseInt(localStorage.getItem('vs_usage_' + PAYWALL_CONFIG.productKey) || '0');
 }
-
 function incrementUsage() {
   const count = getUsageCount() + 1;
   localStorage.setItem('vs_usage_' + PAYWALL_CONFIG.productKey, count);
   return count;
 }
-
 function getRemainingTrials() {
   return Math.max(0, PAYWALL_CONFIG.freeLimit - getUsageCount());
 }
@@ -681,123 +1152,82 @@ function injectPaywallStyles() {
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .vs-trial-left { display: flex; align-items: center; gap: 12px; }
     .vs-trial-dots { display: flex; gap: 5px; }
-    .vs-trial-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: rgba(255,255,255,0.15);
-    }
-    .vs-trial-dot.used { background: #F97316; }
+    .vs-trial-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.15); }
+    .vs-trial-dot.used { background: ${PAYWALL_CONFIG.color}; }
     .vs-trial-text { font-size: 13px; color: rgba(255,255,255,0.7); font-family: 'DM Sans', sans-serif; }
     .vs-trial-text strong { color: white; }
     .vs-subscribe-btn {
-      background: #F97316; color: white;
-      border: none; border-radius: 30px;
-      padding: 8px 20px; font-size: 13px; font-weight: 600;
-      cursor: pointer; font-family: 'DM Sans', sans-serif;
-      text-decoration: none; display: inline-block;
-      transition: opacity 0.2s;
+      background: ${PAYWALL_CONFIG.color}; color: white;
+      border: none; border-radius: 30px; padding: 8px 20px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; text-decoration: none;
+      display: inline-block; transition: opacity 0.2s;
     }
     .vs-subscribe-btn:hover { opacity: 0.85; }
-
-    /* PAYWALL MODAL */
     .vs-modal-overlay {
       position: fixed; inset: 0; z-index: 10000;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(8px);
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
       display: flex; align-items: center; justify-content: center;
-      padding: 1.5rem;
-      animation: fadeIn 0.3s ease;
+      padding: 1.5rem; animation: fadeIn 0.3s ease;
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .vs-modal {
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px;
-      padding: 2.5rem;
-      max-width: 440px; width: 100%;
-      text-align: center;
-      animation: scaleIn 0.3s ease;
-      position: relative;
+      background: #111; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px; padding: 2.5rem;
+      max-width: 440px; width: 100%; text-align: center;
+      animation: scaleIn 0.3s ease; position: relative;
     }
     @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .vs-modal-emoji { font-size: 48px; margin-bottom: 1rem; display: block; }
-    .vs-modal-title {
-      font-size: 24px; font-weight: 800; color: white;
-      margin-bottom: 0.5rem; font-family: 'Syne', sans-serif;
-      letter-spacing: -0.5px;
-    }
-    .vs-modal-sub {
-      font-size: 14px; color: rgba(255,255,255,0.5);
-      margin-bottom: 2rem; line-height: 1.6;
-    }
-    .vs-modal-price {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px; padding: 1.25rem;
-      margin-bottom: 1.5rem;
-    }
-    .vs-price-amount {
-      font-size: 36px; font-weight: 800; color: white;
-      font-family: 'Syne', sans-serif;
-    }
+    .vs-modal-title { font-size: 24px; font-weight: 800; color: white; margin-bottom: 0.5rem; font-family: 'Syne', sans-serif; }
+    .vs-modal-sub { font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 2rem; line-height: 1.6; }
+    .vs-modal-price { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
+    .vs-price-amount { font-size: 36px; font-weight: 800; color: white; font-family: 'Syne', sans-serif; }
     .vs-price-amount span { font-size: 16px; color: rgba(255,255,255,0.5); font-weight: 400; }
     .vs-price-desc { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 4px; }
-    .vs-modal-features {
-      list-style: none; margin-bottom: 1.5rem; text-align: left;
-    }
-    .vs-modal-features li {
-      font-size: 13px; color: rgba(255,255,255,0.6);
-      padding: 6px 0; display: flex; align-items: center; gap: 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
+    .vs-modal-features { list-style: none; margin-bottom: 1.5rem; text-align: left; }
+    .vs-modal-features li { font-size: 13px; color: rgba(255,255,255,0.6); padding: 6px 0; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .vs-modal-features li:last-child { border-bottom: none; }
-    .vs-modal-features li::before { content: '✓'; color: #F97316; font-weight: 700; }
-    .vs-modal-cta {
-      display: block; width: 100%;
-      background: #F97316; color: white;
-      border: none; border-radius: 30px;
-      padding: 14px; font-size: 15px; font-weight: 700;
-      cursor: pointer; font-family: 'Syne', sans-serif;
-      text-decoration: none; text-align: center;
-      transition: opacity 0.2s; margin-bottom: 1rem;
-    }
+    .vs-modal-features li::before { content: '✓'; color: ${PAYWALL_CONFIG.color}; font-weight: 700; }
+    .vs-modal-cta { display: block; width: 100%; background: ${PAYWALL_CONFIG.color}; color: white; border: none; border-radius: 30px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Syne', sans-serif; text-decoration: none; text-align: center; transition: opacity 0.2s; margin-bottom: 1rem; }
     .vs-modal-cta:hover { opacity: 0.85; }
-    .vs-modal-dismiss {
-      font-size: 12px; color: rgba(255,255,255,0.3);
-      cursor: pointer; background: none; border: none;
-      font-family: 'DM Sans', sans-serif;
-    }
+    .vs-modal-dismiss { font-size: 12px; color: rgba(255,255,255,0.3); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; }
     .vs-modal-dismiss:hover { color: rgba(255,255,255,0.6); }
   `;
   document.head.appendChild(style);
 }
 
 function showTrialBar() {
+  if (document.getElementById('vsTrialBar')) return;
   const remaining = getRemainingTrials();
   const used = getUsageCount();
-  if (remaining <= 0) return;
+  if (remaining <= 0) return showEndedBar();
 
   const bar = document.createElement('div');
-  bar.className = 'vs-trial-bar';
-  bar.id = 'vsTrialBar';
-
+  bar.className = 'vs-trial-bar'; bar.id = 'vsTrialBar';
   let dots = '';
   for (let i = 0; i < PAYWALL_CONFIG.freeLimit; i++) {
     dots += `<div class="vs-trial-dot ${i < used ? 'used' : ''}"></div>`;
   }
-
   bar.innerHTML = `
     <div class="vs-trial-left">
       <div class="vs-trial-dots">${dots}</div>
-      <div class="vs-trial-text">
-        <strong>${remaining} free ${remaining === 1 ? 'generation' : 'generations'}</strong> remaining
-      </div>
+      <div class="vs-trial-text"><strong>${remaining} free ${remaining === 1 ? 'generation' : 'generations'}</strong> remaining</div>
     </div>
-    <a href="${PAYWALL_CONFIG.paymentLink}" target="_blank" class="vs-subscribe-btn">
-      Subscribe ₹${PAYWALL_CONFIG.price}/month →
-    </a>
-  `.replace(/#F97316/g, PAYWALL_CONFIG.color);
+    <a href="${PAYWALL_CONFIG.paymentLink}" target="_blank" class="vs-subscribe-btn">Subscribe ₹${PAYWALL_CONFIG.price}/month →</a>
+  `;
+  document.body.appendChild(bar);
+  document.body.style.paddingBottom = '60px';
+}
 
-  bar.style.cssText = bar.style.cssText.replace(/#F97316/g, PAYWALL_CONFIG.color);
+function showEndedBar() {
+  if (document.getElementById('vsTrialBar')) return;
+  const bar = document.createElement('div');
+  bar.className = 'vs-trial-bar'; bar.id = 'vsTrialBar';
+  bar.innerHTML = `
+    <div class="vs-trial-text" style="color:rgba(255,255,255,0.7)"><strong style="color:white">Free trial ended.</strong> Subscribe to continue using ${PAYWALL_CONFIG.productName}</div>
+    <a href="${PAYWALL_CONFIG.paymentLink}" target="_blank" class="vs-subscribe-btn">Subscribe ₹${PAYWALL_CONFIG.price}/month →</a>
+  `;
   document.body.appendChild(bar);
   document.body.style.paddingBottom = '60px';
 }
@@ -807,23 +1237,19 @@ function updateTrialBar() {
   if (!bar) return;
   const remaining = getRemainingTrials();
   const used = getUsageCount();
-
+  if (remaining <= 0) { bar.remove(); showEndedBar(); return; }
   let dots = '';
   for (let i = 0; i < PAYWALL_CONFIG.freeLimit; i++) {
     dots += `<div class="vs-trial-dot ${i < used ? 'used' : ''}"></div>`;
   }
-
   bar.querySelector('.vs-trial-dots').innerHTML = dots;
-  bar.querySelector('.vs-trial-text').innerHTML = `
-    <strong>${remaining} free ${remaining === 1 ? 'generation' : 'generations'}</strong> remaining
-  `;
+  bar.querySelector('.vs-trial-text').innerHTML = `<strong>${remaining} free ${remaining === 1 ? 'generation' : 'generations'}</strong> remaining`;
 }
 
 function showPaywallModal() {
+  if (document.getElementById('vsModalOverlay')) return;
   const overlay = document.createElement('div');
-  overlay.className = 'vs-modal-overlay';
-  overlay.id = 'vsModalOverlay';
-
+  overlay.className = 'vs-modal-overlay'; overlay.id = 'vsModalOverlay';
   overlay.innerHTML = `
     <div class="vs-modal">
       <span class="vs-modal-emoji">${PAYWALL_CONFIG.emoji}</span>
@@ -835,57 +1261,38 @@ function showPaywallModal() {
       </div>
       <ul class="vs-modal-features">
         <li>Unlimited AI generations</li>
-        <li>All tools unlocked</li>
-        <li>Malayalam & English support</li>
+        <li>All 6 tools unlocked</li>
+        <li>6 Indian languages</li>
+        <li>PDF download & WhatsApp share</li>
         <li>Priority support</li>
       </ul>
-      <a href="${PAYWALL_CONFIG.paymentLink}" target="_blank" class="vs-modal-cta">
-        Subscribe Now — ₹${PAYWALL_CONFIG.price}/month
-      </a>
-      <button class="vs-modal-dismiss" onclick="document.getElementById('vsModalOverlay').remove()">
-        Maybe later
-      </button>
+      <a href="${PAYWALL_CONFIG.paymentLink}" target="_blank" class="vs-modal-cta">Subscribe Now — ₹${PAYWALL_CONFIG.price}/month</a>
+      <button class="vs-modal-dismiss" onclick="document.getElementById('vsModalOverlay').remove()">Maybe later</button>
     </div>
   `;
-
-  // Fix colors
-  overlay.innerHTML = overlay.innerHTML.replace(/#F97316/g, PAYWALL_CONFIG.color);
   document.body.appendChild(overlay);
 }
 
+// FIX: check BEFORE incrementing
 function checkPaywall() {
-  const count = incrementUsage();
-  updateTrialBar();
-
-  if (count > PAYWALL_CONFIG.freeLimit) {
+  const current = getUsageCount();
+  if (current >= PAYWALL_CONFIG.freeLimit) {
     showPaywallModal();
-    return false; // block generation
+    return false;
   }
-  return true; // allow generation
+  incrementUsage();
+  updateTrialBar();
+  return true;
 }
 
-// Init
+// ============================================
+// INIT
+// ============================================
 document.addEventListener('DOMContentLoaded', () => {
   injectPaywallStyles();
-  if (getRemainingTrials() > 0) {
-    showTrialBar();
-  } else {
-    // Already used all trials — show bar with subscribe only
-    const bar = document.createElement('div');
-    bar.className = 'vs-trial-bar';
-    bar.innerHTML = `
-      <div class="vs-trial-text" style="color:rgba(255,255,255,0.7)">
-        <strong style="color:white">Free trial ended.</strong> Subscribe to continue using ${PAYWALL_CONFIG.productName}
-      </div>
-      <a href="${PAYWALL_CONFIG.paymentLink}" target="_blank" class="vs-subscribe-btn">
-        Subscribe ₹${PAYWALL_CONFIG.price}/month →
-      </a>
-    `;
-    document.body.appendChild(bar);
-    document.body.style.paddingBottom = '60px';
-  }
+  showTrialBar();
+  renderHistory();
 });
-
 </script>
 </body>
 </html>
