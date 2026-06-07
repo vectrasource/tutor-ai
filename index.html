@@ -669,7 +669,7 @@
 const tools = {
   paper: {
     emoji: '📝',
-    loaderText: 'Generating question paper...',
+    loaderText: 'Generating question paper... (10-15 sec)',
     buildPrompt(lang, board, subject, cls) {
       const topic = document.getElementById('p-topic').value || 'Full syllabus';
       const marks = document.getElementById('p-marks').value || '40';
@@ -722,7 +722,7 @@ Write all question content in ${lang}. Write formulas in plain text (e.g. x^2 + 
   },
   notes: {
     emoji: '📖',
-    loaderText: 'Creating study notes...',
+    loaderText: 'Creating study notes... (10-15 sec)',
     buildPrompt(lang, board, subject, cls) {
       const topic = document.getElementById('n-topic').value || 'Chapter';
       const style = document.getElementById('n-style').value;
@@ -752,7 +752,7 @@ Write in clear ${lang} appropriate for ${cls} students.`;
   },
   parent: {
     emoji: '👨‍👩‍👧',
-    loaderText: 'Writing parent letter...',
+    loaderText: 'Writing parent letter... (10-15 sec)',
     buildPrompt(lang, board, subject, cls) {
       const name = document.getElementById('pl-name').value || 'Student';
       const tone = document.getElementById('pl-tone').value;
@@ -786,7 +786,7 @@ Include:
   },
   lesson: {
     emoji: '🗓️',
-    loaderText: 'Building lesson plan...',
+    loaderText: 'Building lesson plan... (10-15 sec)',
     buildPrompt(lang, board, subject, cls) {
       const topic = document.getElementById('lp-topic').value || 'Topic';
       const days = document.getElementById('lp-days').value || '5';
@@ -822,7 +822,7 @@ Write in ${lang}.`;
   },
   mcq: {
     emoji: '✅',
-    loaderText: 'Generating MCQ questions...',
+    loaderText: 'Generating MCQ questions... (10-15 sec)',
     buildPrompt(lang, board, subject, cls) {
       const topic = document.getElementById('mcq-topic').value || 'Topic';
       const count = document.getElementById('mcq-count').value || '20';
@@ -857,7 +857,7 @@ Write questions in ${lang}. Vary difficulty within ${difficulty} level.`;
   },
   explain: {
     emoji: '💡',
-    loaderText: 'Creating explanation...',
+    loaderText: 'Creating explanation... (10-15 sec)',
     buildPrompt(lang, board, subject, cls) {
       const topic = document.getElementById('ex-topic').value || 'Topic';
       const style = document.getElementById('ex-style').value;
@@ -1253,7 +1253,7 @@ function showPaywallModal() {
   overlay.innerHTML = `
     <div class="vs-modal">
       <span class="vs-modal-emoji">${PAYWALL_CONFIG.emoji}</span>
-      <div class="vs-modal-title">You've used all 5 free generations</div>
+      <div class="vs-modal-title">You've used all 3 free generations</div>
       <div class="vs-modal-sub">Subscribe to ${PAYWALL_CONFIG.productName} and get unlimited access to all tools.</div>
       <div class="vs-modal-price">
         <div class="vs-price-amount">₹${PAYWALL_CONFIG.price}<span>/month</span></div>
