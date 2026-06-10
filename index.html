@@ -1,1372 +1,928 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TutorAI — AI Assistant for Indian Tuition Teachers</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TutorAI — AI Teaching Assistant for Indian Tuition Teachers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<!-- Markdown renderer -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-M4WSNSHVHS"></script> <script>   window.dataLayer = window.dataLayer || [];   function gtag(){dataLayer.push(arguments);}   gtag('js', new Date());   gtag('config', 'G-M4WSNSHVHS'); </script>
-<!-- PDF export -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+Malayalam:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --or:#F97316;--or-l:#FB923C;--or-d:#EA580C;
+  --pu:#7C3AED;--pu-l:#8B5CF6;--pu-d:#6D28D9;
+  --gold:#FBBF24;
+  --bg:#0f0a05;--bg-card:rgba(20,10,2,.65);
+  --glass-or:rgba(249,115,22,.2);--glass-pu:rgba(124,58,237,.18);
+  --w100:#fff;--w70:rgba(255,255,255,.7);--w40:rgba(255,255,255,.4);--w20:rgba(255,255,255,.2);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:#fff;font-family:'Poppins',sans-serif;overflow-x:hidden}
 
-  :root {
-    --orange: #F97316;
-    --orange-dark: #C2570A;
-    --orange-light: #FFF7ED;
-    --orange-mid: #FDBA74;
-    --purple: #7C3AED;
-    --purple-light: #F5F3FF;
-    --ink: #1C1917;
-    --ink-mid: #44403C;
-    --ink-light: #78716C;
-    --border: rgba(28,25,23,0.1);
-    --surface: #FAFAF9;
-    --white: #ffffff;
-    --radius: 10px;
-    --radius-lg: 16px;
-    --green: #16a34a;
-    --green-light: #f0fdf4;
-  }
+#canvas3d{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;transition:opacity .6s ease}
+.page{position:relative;z-index:1}
 
-  body { font-family: 'DM Sans', sans-serif; background: var(--surface); color: var(--ink); min-height: 100vh; }
+.or-text{background:linear-gradient(135deg,#EA580C 0%,#F97316 40%,#FB923C 70%,#FBBF24 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.pu-text{background:linear-gradient(135deg,#6D28D9 0%,#7C3AED 50%,#8B5CF6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.or-bar{width:72px;height:2px;background:linear-gradient(90deg,transparent,var(--or),transparent);margin:0 auto}
 
-  /* NAV */
-  nav {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(250,250,249,0.95);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem; height: 60px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .nav-brand { display: flex; align-items: center; gap: 10px; }
-  .nav-logo {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, var(--orange), var(--purple));
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-  }
-  .nav-name { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--ink); }
-  .nav-name span { color: var(--orange); }
-  .nav-right { display: flex; align-items: center; gap: 8px; }
-  .nav-badge { font-size: 11px; padding: 3px 10px; background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange-mid); border-radius: 20px; font-weight: 700; }
-  .nav-india { font-size: 11px; padding: 3px 10px; background: var(--purple-light); color: var(--purple); border-radius: 20px; font-weight: 500; }
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(15,10,5,.45);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(249,115,22,.1);transition:background .3s}
+.nav.scrolled{background:rgba(15,10,5,.9)}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo svg{width:34px;height:34px;flex-shrink:0}
+.nav-brand{font-family:'Cinzel',serif;font-size:1.18rem;font-weight:700;letter-spacing:.15em;white-space:nowrap;background:linear-gradient(135deg,#EA580C,#F97316,#FBBF24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-link{color:var(--w70);text-decoration:none;font-size:.85rem;font-weight:500;letter-spacing:.04em;transition:color .2s}
+.nav-link:hover{color:var(--or-l)}
 
-  /* HERO */
-  .hero {
-    text-align: center; padding: 4.5rem 1.5rem 2.5rem;
-    max-width: 760px; margin: 0 auto; position: relative;
-  }
-  .hero::before {
-    content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-    width: 700px; height: 350px;
-    background: radial-gradient(ellipse at center, rgba(249,115,22,0.07) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero-pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: linear-gradient(135deg, var(--orange), var(--purple));
-    color: var(--white); font-size: 12px; font-weight: 500;
-    padding: 5px 16px; border-radius: 20px; margin-bottom: 1.5rem; letter-spacing: 0.3px;
-  }
-  h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(30px, 5.5vw, 50px);
-    font-weight: 800; line-height: 1.12;
-    color: var(--ink); margin-bottom: 1rem; letter-spacing: -1px;
-  }
-  h1 em { color: var(--orange); font-style: normal; }
-  h1 .hl {
-    background: linear-gradient(135deg, var(--orange), var(--purple));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  }
-  .hero-sub { font-size: 16px; color: var(--ink-mid); line-height: 1.7; margin-bottom: 1.5rem; max-width: 540px; margin-left: auto; margin-right: auto; }
-  .lang-pills { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2.5rem; }
-  .lang-pill { font-size: 12px; padding: 4px 14px; background: var(--white); border: 1px solid var(--border); border-radius: 20px; color: var(--ink-mid); font-weight: 500; }
-  .stats-row { display: flex; justify-content: center; gap: 2.5rem; margin-bottom: 3rem; flex-wrap: wrap; }
-  .stat { text-align: center; }
-  .stat-num {
-    font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800;
-    background: linear-gradient(135deg, var(--orange), var(--purple));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  }
-  .stat-label { font-size: 11px; color: var(--ink-light); margin-top: 2px; }
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 26px;border-radius:7px;font-weight:600;font-size:.88rem;letter-spacing:.06em;cursor:pointer;transition:all .3s ease;text-decoration:none;border:none;font-family:'Poppins',sans-serif}
+.btn-or{background:linear-gradient(135deg,#EA580C,#F97316,#FB923C);color:#fff;box-shadow:0 4px 20px rgba(249,115,22,.3)}
+.btn-or:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(249,115,22,.5)}
+.btn-pu{background:linear-gradient(135deg,#6D28D9,#7C3AED,#8B5CF6);color:#fff;box-shadow:0 4px 20px rgba(124,58,237,.3)}
+.btn-pu:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(124,58,237,.5)}
+.btn-outline{background:transparent;color:var(--or);border:1px solid var(--or)}
+.btn-outline:hover{background:rgba(249,115,22,.08);transform:translateY(-2px)}
+.btn-sm{padding:9px 20px;font-size:.8rem}
 
-  /* APP */
-  .app-container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:120px 24px 90px;position:relative}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 72% 58% at 50% 52%,rgba(249,115,22,.05) 0%,rgba(124,58,237,.03) 50%,transparent 72%);pointer-events:none}
+.hero-content{max-width:920px;position:relative}
 
-  /* TOOL GRID */
-  .tool-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.5rem; }
-  @media (min-width: 560px) { .tool-grid { grid-template-columns: repeat(4, 1fr); } }
-  .tool-btn {
-    background: var(--white); border: 1.5px solid var(--border);
-    border-radius: var(--radius-lg); padding: 16px 12px;
-    cursor: pointer; text-align: left; transition: all 0.15s;
-    position: relative; overflow: hidden;
-  }
-  .tool-btn::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--orange), var(--purple));
-    transform: scaleX(0); transition: transform 0.2s; transform-origin: left;
-  }
-  .tool-btn:hover { border-color: var(--orange); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(249,115,22,0.1); }
-  .tool-btn:hover::before { transform: scaleX(1); }
-  .tool-btn.active { border-color: var(--orange); background: var(--orange-light); }
-  .tool-btn.active::before { transform: scaleX(1); }
-  .tool-emoji { font-size: 22px; margin-bottom: 8px; display: block; }
-  .tool-name { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--ink); display: block; }
-  .tool-desc { font-size: 10px; color: var(--ink-light); display: block; margin-top: 2px; }
+.badge{display:inline-flex;align-items:center;gap:8px;padding:5px 18px;background:rgba(249,115,22,.07);border:1px solid rgba(249,115,22,.28);border-radius:100px;font-size:.72rem;color:var(--or);letter-spacing:.14em;text-transform:uppercase;font-weight:600;margin-bottom:30px}
+.badge-dot{width:6px;height:6px;background:var(--or);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.65)}}
 
-  /* FORM */
-  .form-card {
-    background: var(--white); border: 1.5px solid var(--border);
-    border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1rem;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.04);
-  }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-  .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-  .form-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-  @media (max-width: 560px) { .form-grid-4 { grid-template-columns: 1fr 1fr; } .form-grid-3 { grid-template-columns: 1fr 1fr; } }
-  .form-row { margin-bottom: 14px; }
-  label { display: block; font-size: 11px; color: var(--ink-light); font-weight: 600; margin-bottom: 5px; letter-spacing: 0.5px; text-transform: uppercase; }
-  select, textarea, input[type="text"], input[type="number"] {
-    width: 100%; border: 1.5px solid var(--border);
-    border-radius: var(--radius); padding: 10px 14px;
-    font-size: 13px; font-family: 'DM Sans', sans-serif;
-    background: var(--surface); color: var(--ink);
-    outline: none; transition: border-color 0.15s;
-  }
-  select:focus, textarea:focus, input:focus { border-color: var(--orange); }
-  textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+.hero-title{font-family:'Cinzel',serif;font-size:clamp(3.4rem,8.5vw,7.2rem);font-weight:900;line-height:.93;letter-spacing:.07em;margin-bottom:6px}
+.hero-sub-title{font-family:'Cinzel',serif;font-size:clamp(.9rem,2.1vw,1.45rem);font-weight:400;letter-spacing:.3em;color:var(--w70);margin-bottom:22px}
+.hero-bar{margin:18px auto 22px}
+.hero-tagline{font-family:'Playfair Display',serif;font-size:clamp(1rem,2.1vw,1.28rem);color:var(--w70);line-height:1.7;margin-bottom:10px}
+.hero-ml{font-family:'Noto Sans Malayalam',sans-serif;font-size:clamp(.88rem,1.65vw,1.05rem);color:var(--or);letter-spacing:.04em;margin-bottom:44px;opacity:.88}
+.hero-btns{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+.btn-hero{padding:16px 42px;font-size:.97rem;border-radius:8px;letter-spacing:.09em}
 
-  /* SMART FIELDS — shown/hidden per tool */
-  .smart-fields { margin-bottom: 14px; }
-  .smart-fields.hidden { display: none; }
+.hero-stats{display:flex;align-items:center;justify-content:center;gap:0;margin-top:44px;flex-wrap:wrap;row-gap:16px}
+.hstat{display:flex;flex-direction:column;align-items:center;padding:0 28px}
+.hstat-num{font-family:'Cinzel',serif;font-size:1.35rem;font-weight:700;background:linear-gradient(135deg,#EA580C,#F97316,#FBBF24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.hstat-label{font-size:.72rem;color:var(--w40);letter-spacing:.1em;text-transform:uppercase;margin-top:5px;font-weight:500}
+.hstat-div{width:1px;height:32px;background:linear-gradient(180deg,transparent,rgba(249,115,22,.35),transparent)}
 
-  /* DIVIDER */
-  .form-divider {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 14px; color: var(--ink-light); font-size: 11px;
-    letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600;
-  }
-  .form-divider::before, .form-divider::after {
-    content: ''; flex: 1; height: 1px; background: var(--border);
-  }
+.scroll-hint{position:absolute;bottom:38px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:7px;color:var(--w40);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase}
+.scroll-arrow{width:18px;height:18px;border-right:1px solid rgba(255,255,255,.28);border-bottom:1px solid rgba(255,255,255,.28);transform:rotate(45deg);animation:bounce 1.6s infinite}
+@keyframes bounce{0%,100%{transform:rotate(45deg) translateY(0);opacity:.9}50%{transform:rotate(45deg) translateY(5px);opacity:.3}}
 
-  .gen-btn {
-    width: 100%;
-    background: linear-gradient(135deg, var(--orange), var(--purple));
-    color: white; border: none; border-radius: var(--radius);
-    padding: 13px; font-size: 14px; font-weight: 700;
-    cursor: pointer; font-family: 'Syne', sans-serif; letter-spacing: 0.3px;
-    transition: opacity 0.15s, transform 0.1s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .gen-btn:hover { opacity: 0.9; }
-  .gen-btn:active { transform: scale(0.99); }
-  .gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+/* SECTIONS */
+.section{padding:96px 24px}
+.sec-inner{max-width:1140px;margin:0 auto}
+.sec-hd{text-align:center;margin-bottom:60px}
+.sec-label{font-size:.72rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--or);margin-bottom:12px}
+.sec-title{font-family:'Playfair Display',serif;font-size:clamp(2rem,4.2vw,2.85rem);font-weight:700;margin-bottom:14px}
+.sec-sub{font-size:.93rem;color:var(--w70);max-width:540px;margin:14px auto 0;line-height:1.72}
 
-  /* OUTPUT */
-  .output-card {
-    background: var(--white); border: 1.5px solid var(--border);
-    border-radius: var(--radius-lg); overflow: hidden;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.04);
-  }
-  .output-topbar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 1.5rem; border-bottom: 1px solid var(--border);
-    background: var(--surface); flex-wrap: wrap; gap: 8px;
-  }
-  .output-label { font-size: 12px; font-weight: 700; color: var(--ink-mid); font-family: 'Syne', sans-serif; letter-spacing: 0.3px; }
-  .output-actions { display: flex; gap: 8px; align-items: center; }
-  .action-btn {
-    font-size: 12px; color: var(--orange);
-    background: none; border: 1.5px solid var(--orange);
-    border-radius: 6px; padding: 4px 12px;
-    cursor: pointer; font-family: 'DM Sans', sans-serif;
-    font-weight: 500; transition: background 0.15s;
-    display: flex; align-items: center; gap: 5px;
-    text-decoration: none;
-  }
-  .action-btn:hover { background: var(--orange-light); }
-  .action-btn.whatsapp { color: var(--green); border-color: var(--green); }
-  .action-btn.whatsapp:hover { background: var(--green-light); }
-  .action-btn.pdf { color: var(--purple); border-color: var(--purple); }
-  .action-btn.pdf:hover { background: var(--purple-light); }
+/* BOARDS STRIP */
+.boards-strip{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;margin-top:48px}
+.board-tag{padding:7px 18px;background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.2);border-radius:100px;font-size:.78rem;color:var(--or-l);font-weight:500;letter-spacing:.06em}
 
-  .output-body { padding: 1.5rem; min-height: 160px; }
-  .output-placeholder { font-size: 13px; color: var(--ink-light); font-style: italic; line-height: 1.7; }
+/* FEATURES */
+.features-section{background:linear-gradient(180deg,transparent 0%,rgba(20,10,2,.85) 18%,rgba(20,10,2,.92) 82%,transparent 100%)}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px}
+.fcard{background:rgba(20,10,2,.62);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(249,115,22,.14);border-radius:16px;padding:34px 26px;transition:all .4s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden;cursor:default}
+.fcard::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--or),transparent);opacity:0;transition:opacity .4s}
+.fcard:hover{border-color:rgba(249,115,22,.38);transform:translateY(-6px);box-shadow:0 24px 60px rgba(0,0,0,.4),0 0 40px rgba(249,115,22,.07)}
+.fcard:hover::after{opacity:1}
+.fcard:nth-child(2n) .fcard-accent{color:var(--pu-l)}
+.fcard:nth-child(2n){border-color:rgba(124,58,237,.14)}
+.fcard:nth-child(2n)::after{background:linear-gradient(90deg,transparent,var(--pu),transparent)}
+.fcard:nth-child(2n):hover{border-color:rgba(124,58,237,.38);box-shadow:0 24px 60px rgba(0,0,0,.4),0 0 40px rgba(124,58,237,.07)}
+.ficon{width:50px;height:50px;background:rgba(249,115,22,.09);border:1px solid rgba(249,115,22,.24);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;color:var(--or)}
+.fcard:nth-child(2n) .ficon{background:rgba(124,58,237,.09);border-color:rgba(124,58,237,.24);color:var(--pu-l)}
+.fname{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:9px}
+.fdesc{font-size:.86rem;color:var(--w70);line-height:1.66}
+.ftag{display:inline-block;margin-top:14px;padding:4px 12px;background:rgba(249,115,22,.07);border:1px solid rgba(249,115,22,.18);border-radius:100px;font-size:.7rem;color:var(--or);letter-spacing:.07em}
+.fcard:nth-child(2n) .ftag{background:rgba(124,58,237,.07);border-color:rgba(124,58,237,.18);color:var(--pu-l)}
 
-  /* Markdown output styling */
-  .output-md { font-size: 13px; color: var(--ink); line-height: 1.9; }
-  .output-md h1, .output-md h2, .output-md h3 {
-    font-family: 'Syne', sans-serif; font-weight: 700;
-    color: var(--ink); margin: 1.2em 0 0.5em;
-  }
-  .output-md h1 { font-size: 18px; border-bottom: 2px solid var(--orange-light); padding-bottom: 6px; }
-  .output-md h2 { font-size: 15px; color: var(--orange-dark); }
-  .output-md h3 { font-size: 13px; color: var(--ink-mid); }
-  .output-md p { margin-bottom: 0.8em; }
-  .output-md ul, .output-md ol { margin: 0.5em 0 0.8em 1.5em; }
-  .output-md li { margin-bottom: 4px; }
-  .output-md strong { font-weight: 600; color: var(--ink); }
-  .output-md table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 12px; }
-  .output-md th { background: var(--orange-light); color: var(--orange-dark); padding: 8px 12px; text-align: left; font-weight: 700; border: 1px solid var(--orange-mid); }
-  .output-md td { padding: 7px 12px; border: 1px solid var(--border); }
-  .output-md tr:nth-child(even) td { background: var(--surface); }
-  .output-md hr { border: none; border-top: 1px solid var(--border); margin: 1.2em 0; }
-  .output-md code { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 12px; }
-  .output-md blockquote { border-left: 3px solid var(--orange); padding-left: 1em; color: var(--ink-mid); margin: 0.8em 0; }
+/* PRICING */
+.pricing-section{background:linear-gradient(180deg,transparent 0%,rgba(20,10,2,.9) 15%,rgba(20,10,2,.96) 85%,transparent 100%)}
+.pcard{max-width:500px;margin:0 auto;background:rgba(20,10,2,.72);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border:1px solid rgba(249,115,22,.28);border-radius:24px;padding:48px 44px;position:relative;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.55),0 0 60px rgba(249,115,22,.05)}
+.pcard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#EA580C,#F97316,#FBBF24,transparent)}
+.pbadge{display:inline-flex;align-items:center;padding:5px 14px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.28);border-radius:100px;font-size:.7rem;letter-spacing:.16em;color:var(--or-l);text-transform:uppercase;font-weight:600;margin-bottom:22px}
+.pplan{font-family:'Cinzel',serif;font-size:1rem;font-weight:600;letter-spacing:.15em;color:var(--w70);margin-bottom:14px}
+.pamount{display:flex;align-items:baseline;gap:5px;margin-bottom:6px}
+.pcurr{font-family:'Cinzel',serif;font-size:1.9rem;font-weight:700;color:var(--or)}
+.pnum{font-family:'Cinzel',serif;font-size:5rem;font-weight:900;line-height:1;background:linear-gradient(135deg,#EA580C 0%,#F97316 50%,#FBBF24 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.pper{font-size:1rem;color:var(--w40)}
+.pnote{font-size:.77rem;color:var(--w40);margin-bottom:28px}
+.pdiv{height:1px;background:linear-gradient(90deg,transparent,rgba(249,115,22,.3),transparent);margin:26px 0}
+.pfeats{list-style:none;margin-bottom:34px}
+.pfeats li{display:flex;align-items:flex-start;gap:11px;padding:9px 0;font-size:.88rem;color:var(--w70);border-bottom:1px solid rgba(255,255,255,.04)}
+.pfeats li:last-child{border-bottom:none}
+.pcheck{color:var(--or);flex-shrink:0;margin-top:1px;font-size:.9rem}
+.btn-full{width:100%;padding:17px;font-size:.97rem;border-radius:10px;letter-spacing:.1em}
+.pfree{text-align:center;margin-top:12px;font-size:.8rem;color:var(--or);letter-spacing:.04em;opacity:.85}
+.ppowered{text-align:center;margin-top:8px;font-size:.72rem;color:var(--w40)}
 
-  /* LOADER */
-  .loader { display: flex; align-items: center; gap: 10px; padding: 1rem 0; }
-  .loader-dots { display: flex; gap: 5px; }
-  .loader-dots span { width: 7px; height: 7px; background: var(--orange); border-radius: 50%; animation: pulse 1.1s infinite ease-in-out; }
-  .loader-dots span:nth-child(2) { animation-delay: 0.2s; background: var(--purple); }
-  .loader-dots span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes pulse { 0%,80%,100%{transform:scale(0.5);opacity:0.3} 40%{transform:scale(1);opacity:1} }
-  .loader-text { font-size: 13px; color: var(--ink-light); }
+/* TESTIMONIALS */
+.testi-section{background:linear-gradient(180deg,transparent 0%,rgba(20,10,2,.87) 15%,rgba(20,10,2,.94) 85%,transparent 100%)}
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:22px}
+.tcard{background:rgba(20,10,2,.62);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(249,115,22,.16);border-radius:18px;padding:32px 28px;display:flex;flex-direction:column;gap:20px;transition:all .4s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}
+.tcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--or),transparent);opacity:0;transition:opacity .4s}
+.tcard:hover{border-color:rgba(249,115,22,.36);transform:translateY(-5px);box-shadow:0 22px 55px rgba(0,0,0,.38),0 0 36px rgba(249,115,22,.06)}
+.tcard:hover::before{opacity:1}
+.tcard-top{display:flex;align-items:center;justify-content:space-between}
+.tcard-stars{color:var(--or);font-size:1rem;letter-spacing:2px}
+.tcard-quote-icon{font-family:'Playfair Display',serif;font-size:3.5rem;line-height:1;color:var(--or);opacity:.2;margin-top:-8px}
+.tcard-quote{font-size:.9rem;color:var(--w70);line-height:1.72;font-style:italic;flex:1}
+.tcard-author{display:flex;align-items:center;gap:13px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)}
+.tcard-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,rgba(249,115,22,.25),rgba(249,115,22,.08));border:1px solid rgba(249,115,22,.3);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.78rem;font-weight:700;color:var(--or);flex-shrink:0}
+.tcard-name{font-size:.9rem;font-weight:600;color:var(--w100);margin-bottom:2px}
+.tcard-role{font-size:.76rem;color:var(--w40);letter-spacing:.02em}
 
-  /* HISTORY */
-  .history-section { margin-top: 1.5rem; }
-  .history-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 10px;
-  }
-  .history-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--ink-mid); }
-  .history-clear { font-size: 11px; color: var(--ink-light); background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
-  .history-clear:hover { color: var(--orange); }
-  .history-list { display: flex; flex-direction: column; gap: 8px; }
-  .history-item {
-    background: var(--white); border: 1.5px solid var(--border);
-    border-radius: var(--radius); padding: 12px 14px;
-    cursor: pointer; transition: border-color 0.15s;
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  }
-  .history-item:hover { border-color: var(--orange); }
-  .history-item-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .history-item-emoji { font-size: 18px; flex-shrink: 0; }
-  .history-item-info { min-width: 0; }
-  .history-item-title { font-size: 12px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .history-item-meta { font-size: 11px; color: var(--ink-light); margin-top: 2px; }
-  .history-item-arrow { font-size: 14px; color: var(--ink-light); flex-shrink: 0; }
+/* CTA */
+.cta-section{padding:76px 24px;text-align:center}
+.cta-box{max-width:740px;margin:0 auto;background:rgba(20,10,2,.6);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid rgba(249,115,22,.18);border-radius:24px;padding:64px 48px}
+.cta-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,2.6rem);font-weight:700;margin-bottom:14px}
+.cta-sub{font-size:.97rem;color:var(--w70);margin-bottom:36px;line-height:1.72}
+.cta-btns{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
 
-  /* DISCLAIMER */
-  .disclaimer {
-    margin-top: 1.5rem; padding: 1rem 1.25rem;
-    background: #fffdf0; border: 1px solid #e8d97a;
-    border-radius: var(--radius); font-size: 11px;
-    color: #7a6a10; line-height: 1.7; display: flex; gap: 8px;
-  }
+/* FOOTER */
+footer{padding:36px 48px;border-top:1px solid rgba(249,115,22,.1);display:flex;align-items:center;justify-content:space-between;gap:16px;background:rgba(15,10,5,.6);backdrop-filter:blur(20px)}
+.f-logo{font-family:'Cinzel',serif;font-size:.97rem;font-weight:700;letter-spacing:.15em;background:linear-gradient(135deg,#EA580C,#F97316,#FBBF24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.f-copy{font-size:.76rem;color:var(--w40)}
+.f-links{display:flex;gap:22px}
+.f-link{font-size:.76rem;color:var(--w40);text-decoration:none;transition:color .2s}
+.f-link:hover{color:var(--or)}
 
-  /* FEEDBACK */
-  .feedback-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 1.5rem; border-top: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .feedback-label { font-size: 11px; color: var(--ink-light); }
-  .feedback-btn {
-    background: none; border: 1.5px solid var(--border);
-    border-radius: 6px; padding: 3px 10px;
-    font-size: 14px; cursor: pointer; transition: all 0.15s;
-  }
-  .feedback-btn:hover { border-color: var(--orange); background: var(--orange-light); }
-  .feedback-btn.selected { border-color: var(--orange); background: var(--orange-light); }
+/* LANG STRIP */
+.lang-strip{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin-top:30px}
+.lang-pill{padding:5px 16px;border-radius:100px;font-size:.82rem;font-weight:600;letter-spacing:.04em;border:1px solid}
 
-  footer {
-    text-align: center; padding: 2rem; font-size: 12px; color: var(--ink-light);
-    border-top: 1px solid var(--border); margin-top: 2rem;
-  }
-  footer strong { color: var(--orange); font-family: 'Syne', sans-serif; }
-
-  /* PDF print area (hidden) */
-  #pdfContent {
-    display: none;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    line-height: 1.8;
-    color: #1C1917;
-    padding: 20px;
-  }
-  #pdfContent h1, #pdfContent h2, #pdfContent h3 { font-family: 'Syne', sans-serif; font-weight: 700; margin: 1em 0 0.4em; }
-  #pdfContent h1 { font-size: 18px; border-bottom: 2px solid #F97316; padding-bottom: 6px; }
-  #pdfContent h2 { font-size: 15px; color: #C2570A; }
-  #pdfContent table { border-collapse: collapse; width: 100%; margin: 1em 0; }
-  #pdfContent th { background: #FFF7ED; padding: 8px; text-align: left; border: 1px solid #FDBA74; }
-  #pdfContent td { padding: 7px; border: 1px solid #e5e5e5; }
-  #pdfContent .pdf-header { border-bottom: 2px solid #F97316; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start; }
-  #pdfContent .pdf-brand { font-family: 'Syne', sans-serif; font-weight: 800; color: #F97316; font-size: 16px; }
-  #pdfContent .pdf-meta { font-size: 11px; color: #78716C; text-align: right; }
+@media(max-width:768px){
+  .nav{padding:15px 22px}
+  .nav-link:not(.btn){display:none}
+  .section{padding:68px 18px}
+  .pcard{padding:34px 26px}
+  .cta-box{padding:40px 26px}
+  footer{flex-direction:column;text-align:center;padding:28px 22px}
+}
+@media(max-width:480px){
+  .features-grid,.testi-grid{grid-template-columns:1fr}
+  .hero-btns .btn-hero:last-child{display:none}
+}
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-brand">
-    <div class="nav-logo">📚</div>
-    <span class="nav-name">Tutor<span>AI</span></span>
-  </div>
-  <div class="nav-right">
-    <span class="nav-india">🇮🇳 All India</span>
-    <span class="nav-badge">BETA</span>
-  </div>
-</nav>
+<canvas id="canvas3d"></canvas>
 
-<div class="hero">
-  <div class="hero-pill">📚 Built for Indian Tuition Teachers</div>
-  <h1>Your AI teaching assistant —<br/><span class="hl">in your language</span></h1>
-  <p class="hero-sub">Question papers, study notes, parent letters, lesson plans — generated in seconds. In 6 Indian languages. For every subject, every class.</p>
-  <div class="lang-pills">
-    <div class="lang-pill">🌴 Malayalam</div>
-    <div class="lang-pill">🌸 Hindi</div>
-    <div class="lang-pill">🌺 Tamil</div>
-    <div class="lang-pill">🌿 Telugu</div>
-    <div class="lang-pill">🌾 Kannada</div>
-    <div class="lang-pill">🇬🇧 English</div>
-  </div>
-  <div class="stats-row">
-    <div class="stat"><div class="stat-num">6</div><div class="stat-label">AI Tools</div></div>
-    <div class="stat"><div class="stat-num">6</div><div class="stat-label">Languages</div></div>
-    <div class="stat"><div class="stat-num">All</div><div class="stat-label">Subjects & Classes</div></div>
-  </div>
-</div>
+<div class="page">
 
-<div class="app-container">
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <a href="#" class="nav-logo">
+      <svg viewBox="0 0 34 34" fill="none">
+        <path d="M7 24 L17 8 L27 24" stroke="#F97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 24 L30 24" stroke="#FBBF24" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="17" cy="8" r="2.5" fill="#F97316"/>
+        <path d="M12 19 Q17 15 22 19" stroke="#FB923C" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+        <path d="M10 14 Q8 14 8 16 L8 28 Q8 30 10 30 L24 30 Q26 30 26 28 L26 16 Q26 14 24 14 Z" stroke="#7C3AED" stroke-width="1.2" fill="none"/>
+      </svg>
+      <span class="nav-brand">TUTOR AI</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">Tools</a>
+      <a href="#pricing" class="nav-link">Pricing</a>
+      <a href="/app.html" class="btn btn-or btn-sm">Get Started</a>
+    </div>
+  </nav>
 
-  <div class="tool-grid">
-    <button class="tool-btn active" data-tool="paper" onclick="selectTool(this)">
-      <span class="tool-emoji">📝</span>
-      <span class="tool-name">Question Paper</span>
-      <span class="tool-desc">Custom exam papers</span>
-    </button>
-    <button class="tool-btn" data-tool="notes" onclick="selectTool(this)">
-      <span class="tool-emoji">📖</span>
-      <span class="tool-name">Study Notes</span>
-      <span class="tool-desc">Chapter summaries</span>
-    </button>
-    <button class="tool-btn" data-tool="parent" onclick="selectTool(this)">
-      <span class="tool-emoji">👨‍👩‍👧</span>
-      <span class="tool-name">Parent Letter</span>
-      <span class="tool-desc">Progress updates</span>
-    </button>
-    <button class="tool-btn" data-tool="lesson" onclick="selectTool(this)">
-      <span class="tool-emoji">🗓️</span>
-      <span class="tool-name">Lesson Plan</span>
-      <span class="tool-desc">Weekly teaching plan</span>
-    </button>
-    <button class="tool-btn" data-tool="mcq" onclick="selectTool(this)">
-      <span class="tool-emoji">✅</span>
-      <span class="tool-name">MCQ Generator</span>
-      <span class="tool-desc">Multiple choice questions</span>
-    </button>
-    <button class="tool-btn" data-tool="explain" onclick="selectTool(this)">
-      <span class="tool-emoji">💡</span>
-      <span class="tool-name">Topic Explainer</span>
-      <span class="tool-desc">Simple explanations</span>
-    </button>
-  </div>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="badge"><span class="badge-dot"></span>AI-Powered · Built for India's Teachers</div>
+      <h1 class="hero-title or-text">TUTOR AI</h1>
+      <p class="hero-sub-title">TEACHING INTELLIGENCE</p>
+      <div class="or-bar hero-bar"></div>
+      <p class="hero-tagline">Built for Indian Teachers — Every Board, Every Language.<br>Generate question papers, notes &amp; lesson plans in minutes.</p>
+      <p class="hero-ml">ഇന്ത്യൻ അധ്യാപകർക്കായി AI — हर बोर्ड, हर भाषा</p>
 
-  <!-- FORM -->
-  <div class="form-card">
-    <div class="form-grid-4">
-      <div>
-        <label for="langSelect">Language</label>
-        <select id="langSelect">
-          <option value="English">English</option>
-          <option value="Malayalam">Malayalam (മലയാളം)</option>
-          <option value="Hindi">Hindi (हिंदी)</option>
-          <option value="Tamil">Tamil (தமிழ்)</option>
-          <option value="Telugu">Telugu (తెలుగు)</option>
-          <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
-        </select>
+      <div class="lang-strip">
+        <span class="lang-pill" style="color:#34d399;border-color:#34d39944;background:rgba(52,211,153,.07);font-family:'Noto Sans Malayalam',sans-serif">മലയാളം</span>
+        <span class="lang-pill" style="color:#FB923C;border-color:#FB923C44;background:rgba(251,146,60,.07);font-family:'Noto Sans Devanagari',sans-serif">हिंदी</span>
+        <span class="lang-pill" style="color:#A78BFA;border-color:#A78BFA44;background:rgba(167,139,250,.07);font-family:'Noto Sans Tamil',sans-serif">தமிழ்</span>
+        <span class="lang-pill" style="color:#6ee7b7;border-color:#6ee7b744;background:rgba(110,231,183,.07)">తెలుగు</span>
+        <span class="lang-pill" style="color:#FCD34D;border-color:#FCD34D44;background:rgba(252,211,77,.07)">ಕನ್ನಡ</span>
+        <span class="lang-pill" style="color:#60A5FA;border-color:#60A5FA44;background:rgba(96,165,250,.07)">English</span>
       </div>
-      <div>
-        <label for="boardSelect">Syllabus / Board</label>
-        <select id="boardSelect">
-          <option value="Kerala SCERT">Kerala SCERT</option>
-          <option value="CBSE">CBSE</option>
-          <option value="Tamil Nadu State Board">TN State Board</option>
-          <option value="Telangana State Board">TS State Board</option>
-          <option value="Karnataka State Board">KA State Board</option>
-          <option value="ICSE">ICSE</option>
-        </select>
+
+      <div class="hero-btns" style="margin-top:36px">
+        <a href="/app.html" class="btn btn-or btn-hero">
+          Start Teaching Smarter
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+        <a href="#pricing" class="btn btn-outline btn-hero">View Pricing</a>
       </div>
-      <div>
-        <label for="subjectSelect">Subject</label>
-        <select id="subjectSelect">
-          <option value="Mathematics">Mathematics</option>
-          <option value="Science">Science</option>
-          <option value="Physics">Physics</option>
-          <option value="Chemistry">Chemistry</option>
-          <option value="Biology">Biology</option>
-          <option value="English">English</option>
-          <option value="Social Science">Social Science</option>
-          <option value="History">History</option>
-          <option value="Geography">Geography</option>
-          <option value="Computer Science">Computer Science</option>
-          <option value="Economics">Economics</option>
-          <option value="Accountancy">Accountancy</option>
-        </select>
-      </div>
-      <div>
-        <label for="classSelect">Class / Grade</label>
-        <select id="classSelect">
-          <option value="Class 1">Class 1</option>
-          <option value="Class 2">Class 2</option>
-          <option value="Class 3">Class 3</option>
-          <option value="Class 4">Class 4</option>
-          <option value="Class 5">Class 5</option>
-          <option value="Class 6">Class 6</option>
-          <option value="Class 7">Class 7</option>
-          <option value="Class 8">Class 8</option>
-          <option value="Class 9">Class 9</option>
-          <option value="Class 10">Class 10</option>
-          <option value="Class 11">Class 11</option>
-          <option value="Class 12">Class 12</option>
-        </select>
+      <div class="hero-stats">
+        <div class="hstat"><span class="hstat-num">400+</span><span class="hstat-label">Teachers Using</span></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><span class="hstat-num">5,000+</span><span class="hstat-label">Papers Generated</span></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><span class="hstat-num">4.9 ★</span><span class="hstat-label">Star Rating</span></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><span class="hstat-num">₹269</span><span class="hstat-label">/month</span></div>
       </div>
     </div>
+    <div class="scroll-hint"><div class="scroll-arrow"></div>Scroll</div>
+  </section>
 
-    <!-- SMART FIELDS: Question Paper -->
-    <div class="smart-fields" id="fields-paper">
-      <div class="form-divider">Paper Settings</div>
-      <div class="form-grid-3">
-        <div>
-          <label for="p-topic">Chapter / Topic</label>
-          <input type="text" id="p-topic" placeholder="e.g. Quadratic Equations" />
-        </div>
-        <div>
-          <label for="p-marks">Total Marks</label>
-          <input type="number" id="p-marks" placeholder="e.g. 40" min="10" max="100" />
-        </div>
-        <div>
-          <label for="p-duration">Duration</label>
-          <select id="p-duration">
-            <option value="30 minutes">30 minutes</option>
-            <option value="1 hour" selected>1 hour</option>
-            <option value="1.5 hours">1.5 hours</option>
-            <option value="2 hours">2 hours</option>
-            <option value="2.5 hours">2.5 hours</option>
-            <option value="3 hours">3 hours</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-grid-3">
-        <div>
-          <label for="p-mcq">No. of MCQ</label>
-          <input type="number" id="p-mcq" placeholder="e.g. 5" min="0" max="30" />
-        </div>
-        <div>
-          <label for="p-short">No. of Short Ans.</label>
-          <input type="number" id="p-short" placeholder="e.g. 3" min="0" max="20" />
-        </div>
-        <div>
-          <label for="p-long">No. of Long Ans.</label>
-          <input type="number" id="p-long" placeholder="e.g. 2" min="0" max="10" />
-        </div>
-      </div>
-      <div class="form-grid">
-        <div>
-          <label for="p-difficulty">Difficulty</label>
-          <select id="p-difficulty">
-            <option value="Easy">Easy</option>
-            <option value="Medium" selected>Medium</option>
-            <option value="Hard">Hard</option>
-            <option value="Mixed (Easy + Medium + Hard)">Mixed</option>
-          </select>
-        </div>
-        <div>
-          <label for="p-extra">Additional Instructions</label>
-          <input type="text" id="p-extra" placeholder="e.g. Include answer key" />
-        </div>
-      </div>
-    </div>
-
-    <!-- SMART FIELDS: Study Notes -->
-    <div class="smart-fields hidden" id="fields-notes">
-      <div class="form-divider">Notes Settings</div>
-      <div class="form-grid">
-        <div>
-          <label for="n-topic">Chapter / Topic</label>
-          <input type="text" id="n-topic" placeholder="e.g. Photosynthesis" />
-        </div>
-        <div>
-          <label for="n-style">Note Style</label>
-          <select id="n-style">
-            <option value="detailed with explanations">Detailed</option>
-            <option value="brief bullet-point summary">Brief Bullets</option>
-            <option value="exam-focused key points only">Exam Focus</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <label for="n-extra">Any specific areas to cover?</label>
-        <textarea id="n-extra" placeholder="e.g. Focus on diagrams, definitions, and likely exam questions..." style="min-height:60px"></textarea>
-      </div>
-    </div>
-
-    <!-- SMART FIELDS: Parent Letter -->
-    <div class="smart-fields hidden" id="fields-parent">
-      <div class="form-divider">Student Details</div>
-      <div class="form-grid">
-        <div>
-          <label for="pl-name">Student Name</label>
-          <input type="text" id="pl-name" placeholder="e.g. Rahul Kumar" />
-        </div>
-        <div>
-          <label for="pl-tone">Letter Tone</label>
-          <select id="pl-tone">
-            <option value="positive and encouraging">Positive & Encouraging</option>
-            <option value="neutral progress update">Neutral Update</option>
-            <option value="concerned but supportive">Concern + Support</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <label for="pl-details">Student's performance & what to communicate</label>
-        <textarea id="pl-details" placeholder="e.g. Doing well in Maths but struggling in Science. Attendance is good. Next exam in 2 weeks. Needs more practice at home..."></textarea>
-      </div>
-    </div>
-
-    <!-- SMART FIELDS: Lesson Plan -->
-    <div class="smart-fields hidden" id="fields-lesson">
-      <div class="form-divider">Lesson Plan Settings</div>
-      <div class="form-grid-3">
-        <div>
-          <label for="lp-topic">Topics to Cover</label>
-          <input type="text" id="lp-topic" placeholder="e.g. Trigonometry basics" />
-        </div>
-        <div>
-          <label for="lp-days">Number of Days</label>
-          <input type="number" id="lp-days" placeholder="e.g. 10" min="1" max="30" />
-        </div>
-        <div>
-          <label for="lp-duration">Session Duration</label>
-          <select id="lp-duration">
-            <option value="45 minutes">45 minutes</option>
-            <option value="1 hour" selected>1 hour</option>
-            <option value="1.5 hours">1.5 hours</option>
-            <option value="2 hours">2 hours</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <label for="lp-extra">Student level & any special notes</label>
-        <textarea id="lp-extra" placeholder="e.g. Students are beginners, no prior knowledge of trigonometry. Mix of Class 10 and 11 students..." style="min-height:60px"></textarea>
-      </div>
-    </div>
-
-    <!-- SMART FIELDS: MCQ -->
-    <div class="smart-fields hidden" id="fields-mcq">
-      <div class="form-divider">MCQ Settings</div>
-      <div class="form-grid-3">
-        <div>
-          <label for="mcq-topic">Topic / Chapter</label>
-          <input type="text" id="mcq-topic" placeholder="e.g. Human Digestive System" />
-        </div>
-        <div>
-          <label for="mcq-count">Number of Questions</label>
-          <input type="number" id="mcq-count" placeholder="e.g. 20" min="5" max="50" />
-        </div>
-        <div>
-          <label for="mcq-difficulty">Difficulty</label>
-          <select id="mcq-difficulty">
-            <option value="Easy">Easy</option>
-            <option value="Medium" selected>Medium</option>
-            <option value="Hard">Hard</option>
-            <option value="Mixed">Mixed</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <label for="mcq-extra">Any extra instructions?</label>
-        <input type="text" id="mcq-extra" placeholder="e.g. Include answer key, focus on Class 10 board exam style" />
-      </div>
-    </div>
-
-    <!-- SMART FIELDS: Explainer -->
-    <div class="smart-fields hidden" id="fields-explain">
-      <div class="form-divider">Explanation Settings</div>
-      <div class="form-grid">
-        <div>
-          <label for="ex-topic">Topic / Concept</label>
-          <input type="text" id="ex-topic" placeholder="e.g. Photosynthesis, Newton's Laws..." />
-        </div>
-        <div>
-          <label for="ex-style">Explain As</label>
-          <select id="ex-style">
-            <option value="simple and beginner-friendly">Simple / Beginner</option>
-            <option value="with real-life Indian examples">With Indian Examples</option>
-            <option value="exam-focused with key points">Exam-focused</option>
-            <option value="story-based with an analogy">Story / Analogy</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <button class="gen-btn" id="genBtn" onclick="generate()">✦ Generate</button>
-  </div>
-
-  <!-- OUTPUT -->
-  <div class="output-card">
-    <div class="output-topbar">
-      <div class="output-label">✦ AI OUTPUT</div>
-      <div class="output-actions" id="outputActions" style="display:none">
-        <button class="action-btn" id="copyBtn" onclick="copyOutput()">📋 Copy</button>
-        <button class="action-btn pdf" onclick="downloadPDF()">⬇ PDF</button>
-        <a class="action-btn whatsapp" id="waBtn" href="#" target="_blank">💬 WhatsApp</a>
-      </div>
-    </div>
-    <div class="output-body">
-      <div class="loader" id="loaderEl" style="display:none">
-        <div class="loader-dots"><span></span><span></span><span></span></div>
-        <span class="loader-text" id="loaderText">Generating your content...</span>
-      </div>
-      <div class="output-placeholder" id="placeholder">Your AI-generated teaching material will appear here. Pick a tool above and fill in the details.</div>
-      <div class="output-md" id="outputText" style="display:none"></div>
-    </div>
-    <div class="feedback-row" id="feedbackRow" style="display:none">
-      <span class="feedback-label">Was this helpful?</span>
-      <button class="feedback-btn" onclick="giveFeedback(this,'👍')" title="Helpful">👍</button>
-      <button class="feedback-btn" onclick="giveFeedback(this,'👎')" title="Not helpful">👎</button>
+  <!-- BOARDS STRIP -->
+  <div style="text-align:center;padding:0 24px 48px">
+    <p style="font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(249,115,22,.6);margin-bottom:16px;font-weight:600">Aligned to All Major Boards</p>
+    <div class="boards-strip">
+      <span class="board-tag">CBSE</span>
+      <span class="board-tag">ICSE / ISC</span>
+      <span class="board-tag">Kerala SCERT</span>
+      <span class="board-tag">Tamil Nadu State Board</span>
+      <span class="board-tag">Karnataka Board</span>
+      <span class="board-tag">Andhra Pradesh Board</span>
+      <span class="board-tag">Maharashtra SSC / HSC</span>
+      <span class="board-tag">RBSE Rajasthan</span>
     </div>
   </div>
 
-  <!-- HISTORY -->
-  <div class="history-section" id="historySection" style="display:none">
-    <div class="history-header">
-      <div class="history-title">🕐 Recent Generations</div>
-      <button class="history-clear" onclick="clearHistory()">Clear all</button>
-    </div>
-    <div class="history-list" id="historyList"></div>
-  </div>
-
-  <div class="disclaimer">
-    <span>📌</span>
-    <span>TutorAI is a teaching aid. Always review generated content before distributing to students. AI may occasionally make errors — teacher's judgment always applies.</span>
-  </div>
-
-</div>
-
-<!-- Hidden PDF render area -->
-<div id="pdfContent"></div>
-
-<footer>
-  <strong>TutorAI</strong> — <a href="https://vectrasource.com" style="color:var(--orange);text-decoration:none;">Part of Vectrasource Digital Suite</a> &nbsp;·&nbsp; Built for Indian Teachers
-</footer>
-
-<script>
-// ============================================
-// TOOL CONFIG
-// ============================================
-const tools = {
-  paper: {
-    emoji: '📝',
-    loaderText: 'Generating question paper... (10-15 sec)',
-    buildPrompt(lang, board, subject, cls) {
-      const topic = document.getElementById('p-topic').value || 'Full syllabus';
-      const marks = document.getElementById('p-marks').value || '40';
-      const duration = document.getElementById('p-duration').value;
-      const mcq = document.getElementById('p-mcq').value || '5';
-      const shortAns = document.getElementById('p-short').value || '3';
-      const longAns = document.getElementById('p-long').value || '2';
-      const difficulty = document.getElementById('p-difficulty').value;
-      const extra = document.getElementById('p-extra').value;
-      return `You are TutorAI, an expert teaching assistant for Indian tuition teachers. Generate a complete, well-formatted question paper in ${lang} for ${subject}, ${cls} following ${board} curriculum.
-
-Settings:
-- Topic/Chapter: ${topic}
-- Total Marks: ${marks}
-- Duration: ${duration}
-- MCQ questions: ${mcq}
-- Short answer questions: ${shortAns}
-- Long answer questions: ${longAns}
-- Difficulty: ${difficulty}
-- Extra instructions: ${extra || 'Include an answer key at the end'}
-
-Format using markdown:
-# [School Name] — Question Paper
-**Subject:** ${subject} | **Class:** ${cls} | **Marks:** ${marks} | **Time:** ${duration}
-
----
-
-## Section A — MCQ (1 mark each)
-1. Question... 
-   - (a) Option
-   - (b) Option
-   - (c) Option
-   - (d) Option
-
-## Section B — Short Answer
-**Q1.** Question... *(${Math.round(parseInt(marks)*0.3/parseInt(shortAns||1))} marks)*
-
-## Section C — Long Answer
-**Q1.** Question... *(${Math.round(parseInt(marks)*0.4/parseInt(longAns||1))} marks)*
-
----
-
-## Answer Key
-| Q | Answer |
-|---|--------|
-| 1 | (b) ... |
-
-Write all question content in ${lang}. Write formulas in plain text (e.g. x^2 + 5x + 6 = 0). No LaTeX or dollar signs.`;
-    }
-  },
-  notes: {
-    emoji: '📖',
-    loaderText: 'Creating study notes... (10-15 sec)',
-    buildPrompt(lang, board, subject, cls) {
-      const topic = document.getElementById('n-topic').value || 'Chapter';
-      const style = document.getElementById('n-style').value;
-      const extra = document.getElementById('n-extra').value;
-      return `You are TutorAI for Indian tuition teachers. Create ${style} study notes in ${lang} for **${topic}** — ${subject}, ${cls}, ${board} syllabus.
-${extra ? 'Special focus: ' + extra : ''}
-
-Use this markdown structure:
-# ${topic} — Study Notes
-**Subject:** ${subject} | **Class:** ${cls} | **Board:** ${board}
-
----
-
-## 1. Introduction
-## 2. Key Concepts
-## 3. Important Definitions
-## 4. Examples / Diagrams
-## 5. Quick Revision Points
-> Bullet the most important facts here
-
-## 6. Probable Exam Questions
-1. ...
-2. ...
-
-Write in clear ${lang} appropriate for ${cls} students.`;
-    }
-  },
-  parent: {
-    emoji: '👨‍👩‍👧',
-    loaderText: 'Writing parent letter... (10-15 sec)',
-    buildPrompt(lang, board, subject, cls) {
-      const name = document.getElementById('pl-name').value || 'Student';
-      const tone = document.getElementById('pl-tone').value;
-      const details = document.getElementById('pl-details').value;
-      return `You are TutorAI for Indian tuition teachers. Write a ${tone} parent progress letter in ${lang} for student **${name}**, ${cls}, ${board}.
-
-Details: ${details || 'General progress update'}
-
-Use this format:
-# Parent Progress Letter — ${name}
-
-**Date:** ___________
-**To:** Parent/Guardian of ${name}
-
-Dear Parent/Guardian,
-
-[Letter body — warm, professional, honest in ${lang}]
-
-Include:
-- Current academic performance in ${subject}
-- Strengths observed
-- Areas needing improvement
-- Specific home practice suggestions
-- Any upcoming test information
-- Request for parent cooperation
-
-**Regards,**
-[Teacher Name]
-[Tuition Center Name]`;
-    }
-  },
-  lesson: {
-    emoji: '🗓️',
-    loaderText: 'Building lesson plan... (10-15 sec)',
-    buildPrompt(lang, board, subject, cls) {
-      const topic = document.getElementById('lp-topic').value || 'Topic';
-      const days = document.getElementById('lp-days').value || '5';
-      const duration = document.getElementById('lp-duration').value;
-      const extra = document.getElementById('lp-extra').value;
-      return `You are TutorAI for Indian tuition teachers. Create a ${days}-day lesson plan in ${lang} for **${topic}** — ${subject}, ${cls}, ${board}.
-Each session: ${duration}. ${extra ? 'Note: ' + extra : ''}
-
-Format:
-# Lesson Plan — ${topic}
-**Subject:** ${subject} | **Class:** ${cls} | **Duration:** ${days} days × ${duration}
-
----
-
-## Day 1 — [Topic Name]
-| | |
-|---|---|
-| **Learning Objectives** | ... |
-| **Teaching Method** | ... |
-| **Activities** | ... |
-| **Homework** | ... |
-| **Materials** | ... |
-
-(Repeat for each day)
-
----
-
-## Assessment & Revision Plan
-## Expected Outcomes
-
-Write in ${lang}.`;
-    }
-  },
-  mcq: {
-    emoji: '✅',
-    loaderText: 'Generating MCQ questions... (10-15 sec)',
-    buildPrompt(lang, board, subject, cls) {
-      const topic = document.getElementById('mcq-topic').value || 'Topic';
-      const count = document.getElementById('mcq-count').value || '20';
-      const difficulty = document.getElementById('mcq-difficulty').value;
-      const extra = document.getElementById('mcq-extra').value;
-      return `You are TutorAI for Indian tuition teachers. Generate ${count} ${difficulty} MCQ questions in ${lang} for **${topic}** — ${subject}, ${cls}, ${board}.
-${extra || 'Include an answer key table at the end.'}
-
-Format:
-# MCQ — ${topic}
-**Subject:** ${subject} | **Class:** ${cls} | **Total:** ${count} questions
-
----
-
-**Q1.** [Question text]
-- (a) Option A
-- (b) Option B
-- (c) Option C
-- (d) Option D
-
-(Continue for all ${count} questions)
-
----
-
-## Answer Key
-| Q | Ans | Q | Ans |
-|---|-----|---|-----|
-| 1 | (b) | 2 | (a) |
-
-Write questions in ${lang}. Vary difficulty within ${difficulty} level.`;
-    }
-  },
-  explain: {
-    emoji: '💡',
-    loaderText: 'Creating explanation... (10-15 sec)',
-    buildPrompt(lang, board, subject, cls) {
-      const topic = document.getElementById('ex-topic').value || 'Topic';
-      const style = document.getElementById('ex-style').value;
-      return `You are TutorAI for Indian tuition teachers. Write a ${style} explanation in ${lang} for **${topic}** — ${subject}, ${cls}, ${board}.
-
-Format:
-# ${topic} — Explained Simply
-**Level:** ${cls} | **Style:** ${style}
-
----
-
-## What is ${topic}?
-(One clear sentence)
-
-## Real-Life Example
-(Use an Indian context — Indian cities, food, daily life)
-
-## Step-by-Step Explanation
-1. Step one...
-2. Step two...
-
-## Analogy
-(Compare to something ${cls} students know well)
-
-## Key Points to Remember
-- Point 1
-- Point 2
-- Point 3
-
-## Common Mistakes to Avoid
-> ❌ Wrong: ...
-> ✅ Correct: ...
-
-Write in ${lang} appropriate for ${cls} students.`;
-    }
-  }
-};
-
-let currentTool = 'paper';
-let currentRawText = '';
-
-// ============================================
-// TOOL SELECTION
-// ============================================
-function selectTool(btn) {
-  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentTool = btn.dataset.tool;
-
-  // Show/hide smart fields
-  document.querySelectorAll('.smart-fields').forEach(el => el.classList.add('hidden'));
-  const fields = document.getElementById('fields-' + currentTool);
-  if (fields) fields.classList.remove('hidden');
-
-  resetOutput();
-}
-
-function resetOutput() {
-  document.getElementById('outputText').style.display = 'none';
-  document.getElementById('outputText').innerHTML = '';
-  document.getElementById('placeholder').style.display = 'block';
-  document.getElementById('outputActions').style.display = 'none';
-  document.getElementById('loaderEl').style.display = 'none';
-  document.getElementById('feedbackRow').style.display = 'none';
-  currentRawText = '';
-}
-
-// ============================================
-// GENERATE
-// ============================================
-async function generate() {
-  if (!checkPaywall()) return;
-
-  const lang = document.getElementById('langSelect').value;
-  const board = document.getElementById('boardSelect').value;
-  const subject = document.getElementById('subjectSelect').value;
-  const cls = document.getElementById('classSelect').value;
-
-  const fullPrompt = tools[currentTool].buildPrompt(lang, board, subject, cls);
-
-  document.getElementById('genBtn').disabled = true;
-  document.getElementById('placeholder').style.display = 'none';
-  document.getElementById('outputText').style.display = 'none';
-  document.getElementById('outputActions').style.display = 'none';
-  document.getElementById('feedbackRow').style.display = 'none';
-  document.getElementById('loaderText').textContent = tools[currentTool].loaderText;
-  document.getElementById('loaderEl').style.display = 'flex';
-
-  try {
-    const res = await fetch('/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fullPrompt })
-    });
-
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message || data.error);
-
-    const text = data.text || 'No output received.';
-    currentRawText = text;
-
-    document.getElementById('loaderEl').style.display = 'none';
-    document.getElementById('outputText').innerHTML = marked.parse(text);
-    document.getElementById('outputText').style.display = 'block';
-    document.getElementById('outputActions').style.display = 'flex';
-    document.getElementById('feedbackRow').style.display = 'flex';
-
-    // WhatsApp share
-    const waText = encodeURIComponent(text.slice(0, 1000) + (text.length > 1000 ? '\n\n[Generated by TutorAI — tutor-ai-beryl-three.vercel.app]' : ''));
-    document.getElementById('waBtn').href = `https://wa.me/?text=${waText}`;
-
-    // Save to history
-    saveToHistory(currentTool, lang, subject, cls, text);
-    renderHistory();
-
-  } catch (e) {
-    document.getElementById('loaderEl').style.display = 'none';
-    document.getElementById('outputText').innerHTML = `<p style="color:red">Error: ${e.message}</p>`;
-    document.getElementById('outputText').style.display = 'block';
-  }
-
-  document.getElementById('genBtn').disabled = false;
-}
-
-// ============================================
-// COPY
-// ============================================
-function copyOutput() {
-  navigator.clipboard.writeText(currentRawText).then(() => {
-    const btn = document.getElementById('copyBtn');
-    btn.textContent = '✓ Copied!';
-    setTimeout(() => btn.textContent = '📋 Copy', 2000);
-  });
-}
-
-// ============================================
-// PDF DOWNLOAD
-// ============================================
-function downloadPDF() {
-  const tool = tools[currentTool];
-  const lang = document.getElementById('langSelect').value;
-  const subject = document.getElementById('subjectSelect').value;
-  const cls = document.getElementById('classSelect').value;
-  const now = new Date().toLocaleDateString('en-IN');
-
-  const pdfEl = document.getElementById('pdfContent');
-  pdfEl.innerHTML = `
-    <div class="pdf-header">
-      <div>
-        <div class="pdf-brand">📚 TutorAI</div>
-        <div style="font-size:11px;color:#78716C;margin-top:4px">Vectrasource Digital Suite</div>
+  <!-- FEATURES -->
+  <section class="section features-section" id="features">
+    <div class="sec-inner">
+      <div class="sec-hd">
+        <p class="sec-label">AI Teaching Tools</p>
+        <h2 class="sec-title">Everything You Need to<br><span class="or-text">Teach with Confidence</span></h2>
+        <div class="or-bar" style="margin-top:14px"></div>
+        <p class="sec-sub">Purpose-built for Indian tuition teachers and school educators — fast, board-aligned, and multilingual.</p>
       </div>
-      <div class="pdf-meta">
-        <div>${subject} · ${cls}</div>
-        <div>Language: ${lang}</div>
-        <div>Generated: ${now}</div>
+      <div class="features-grid">
+
+        <div class="fcard">
+          <div class="ficon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          </div>
+          <h3 class="fname">Question Paper Generator</h3>
+          <p class="fdesc">Create chapter-wise, subject-wise question papers with mark distribution in minutes. Supports all CBSE, ICSE, SCERT, and State Board formats with difficulty grading.</p>
+          <span class="ftag">Class 1–12 · All Subjects · PDF Export</span>
+        </div>
+
+        <div class="fcard">
+          <div class="ficon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          </div>
+          <h3 class="fname">Study Notes Creator</h3>
+          <p class="fdesc">Generate structured, student-friendly study notes from any chapter or topic. Perfect for revision handouts and classroom summaries — formatted and ready to print.</p>
+          <span class="ftag">Key Points · Mind Maps · Revision Sheets</span>
+        </div>
+
+        <div class="fcard">
+          <div class="ficon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </div>
+          <h3 class="fname">Parent Letter Writer</h3>
+          <p class="fdesc">Draft professional parent communication letters — progress reports, absence notices, fee reminders, and meeting invites — in English, Hindi, Malayalam, Tamil, and more.</p>
+          <span class="ftag">Multilingual · Progress Reports · Notices</span>
+        </div>
+
+        <div class="fcard">
+          <div class="ficon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <h3 class="fname">Lesson Plan Builder</h3>
+          <p class="fdesc">Build detailed lesson plans with learning objectives, teaching activities, and assessment criteria — fully aligned to CBSE, Kerala SCERT, and State Board curricula and NEP 2020.</p>
+          <span class="ftag">All Boards · NEP 2020 · 5E Model</span>
+        </div>
+
+        <div class="fcard">
+          <div class="ficon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6M9 16h4"/></svg>
+          </div>
+          <h3 class="fname">MCQ Generator</h3>
+          <p class="fdesc">Create multiple choice questions with detailed answer keys and explanations for any topic or chapter. Perfect for unit tests, NEET preparation, JEE practice, and competitive exams.</p>
+          <span class="ftag">NEET · JEE · Board Exams · With Answer Key</span>
+        </div>
+
+        <div class="fcard">
+          <div class="ficon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          </div>
+          <h3 class="fname">Topic Explainer</h3>
+          <p class="fdesc">Get AI-powered simplified explanations for any complex topic — available in multiple languages, at different difficulty levels. Perfect for differentiated instruction and weak students.</p>
+          <span class="ftag">Multilingual · Visual Analogies · Simplified</span>
+        </div>
+
       </div>
     </div>
-    ${marked.parse(currentRawText)}
-  `;
+  </section>
 
-  const opt = {
-    margin: [15, 15, 15, 15],
-    filename: `TutorAI_${currentTool}_${subject}_${cls}_${now.replace(/\//g,'-')}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
+  <!-- PRICING -->
+  <section class="section pricing-section" id="pricing">
+    <div class="sec-inner">
+      <div class="sec-hd">
+        <p class="sec-label">Simple Pricing</p>
+        <h2 class="sec-title">One Plan.<br><span class="or-text">Everything Included.</span></h2>
+        <div class="or-bar" style="margin-top:14px"></div>
+      </div>
+      <div class="pcard">
+        <div class="pbadge">✦ Professional Plan</div>
+        <p class="pplan">TEACHER / TUITION LICENSE</p>
+        <div class="pamount">
+          <span class="pcurr">₹</span>
+          <span class="pnum">269</span>
+          <span class="pper">/month</span>
+        </div>
+        <p class="pnote">Per teacher · Cancel anytime · No hidden fees</p>
+        <div class="pdiv"></div>
+        <ul class="pfeats">
+          <li><span class="pcheck">✦</span>Unlimited Question Paper Generation</li>
+          <li><span class="pcheck">✦</span>Study Notes Creator — Any chapter, any board</li>
+          <li><span class="pcheck">✦</span>Parent Letter Writer — English &amp; Regional languages</li>
+          <li><span class="pcheck">✦</span>Lesson Plan Builder — NEP 2020 aligned</li>
+          <li><span class="pcheck">✦</span>MCQ Generator with Full Answer Keys</li>
+          <li><span class="pcheck">✦</span>Topic Explainer — Multilingual support</li>
+          <li><span class="pcheck">✦</span>All Boards: CBSE, ICSE, SCERT, State Boards</li>
+          <li><span class="pcheck">✦</span>Export as Word &amp; PDF</li>
+          <li><span class="pcheck">✦</span>Priority Support</li>
+        </ul>
+        <a href="https://rzp.io/rzp/rMus1XR" class="btn btn-or btn-full" target="_blank">
+          Subscribe Now — ₹269/month
+        </a>
+        <p class="pfree">3 free generations — then ₹269/month</p>
+        <p class="ppowered">Secured by Razorpay · Trusted Payments</p>
+      </div>
+    </div>
+  </section>
 
-  pdfEl.style.display = 'block';
-  html2pdf().set(opt).from(pdfEl).save().then(() => {
-    pdfEl.style.display = 'none';
-  });
-}
+  <!-- TESTIMONIALS -->
+  <section class="section testi-section">
+    <div class="sec-inner">
+      <div class="sec-hd">
+        <p class="sec-label">Trusted Across India</p>
+        <h2 class="sec-title">What Teachers<br><span class="or-text">Are Saying</span></h2>
+        <div class="or-bar" style="margin-top:14px"></div>
+      </div>
+      <div class="testi-grid">
 
-// ============================================
-// FEEDBACK
-// ============================================
-function giveFeedback(btn, type) {
-  document.querySelectorAll('.feedback-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  // Could send to analytics in future
-}
-
-// ============================================
-// HISTORY (localStorage, last 5)
-// ============================================
-const HISTORY_KEY = 'tutorai_history';
-
-function saveToHistory(tool, lang, subject, cls, text) {
-  let history = getHistory();
-  history.unshift({
-    tool,
-    lang,
-    subject,
-    cls,
-    text,
-    time: Date.now(),
-    preview: text.slice(0, 100)
-  });
-  history = history.slice(0, 5); // keep last 5
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-}
-
-function getHistory() {
-  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
-  catch { return []; }
-}
-
-function renderHistory() {
-  const history = getHistory();
-  const section = document.getElementById('historySection');
-  const list = document.getElementById('historyList');
-
-  if (history.length === 0) { section.style.display = 'none'; return; }
-  section.style.display = 'block';
-
-  list.innerHTML = history.map((item, i) => {
-    const t = tools[item.tool];
-    const timeStr = new Date(item.time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-    return `
-      <div class="history-item" onclick="loadFromHistory(${i})">
-        <div class="history-item-left">
-          <div class="history-item-emoji">${t ? t.emoji : '📄'}</div>
-          <div class="history-item-info">
-            <div class="history-item-title">${item.subject} · ${item.cls} · ${item.lang}</div>
-            <div class="history-item-meta">${item.tool.charAt(0).toUpperCase() + item.tool.slice(1)} · ${timeStr}</div>
+        <div class="tcard">
+          <div class="tcard-top">
+            <div class="tcard-stars">★★★★★</div>
+            <div class="tcard-quote-icon">"</div>
+          </div>
+          <p class="tcard-quote">I run a tuition centre for Classes 8–10 in Thrissur. TutorAI saves me 3 hours every day generating question papers and study notes aligned to Kerala SCERT. The Malayalam parent letter feature is incredible — parents respond so much better in their own language.</p>
+          <div class="tcard-author">
+            <div class="tcard-avatar">JN</div>
+            <div>
+              <p class="tcard-name">Jayasree Nair</p>
+              <p class="tcard-role">Mathematics Tutor, Thrissur, Kerala</p>
+            </div>
           </div>
         </div>
-        <div class="history-item-arrow">→</div>
+
+        <div class="tcard">
+          <div class="tcard-top">
+            <div class="tcard-stars">★★★★★</div>
+            <div class="tcard-quote-icon">"</div>
+          </div>
+          <p class="tcard-quote">The MCQ Generator is incredible for NEET preparation. My Biology students' scores improved significantly after I started using TutorAI for daily practice papers and unit tests. It generates perfectly structured questions with explanations in seconds. Every CBSE teacher needs this.</p>
+          <div class="tcard-author">
+            <div class="tcard-avatar">RS</div>
+            <div>
+              <p class="tcard-name">Rahul Sharma</p>
+              <p class="tcard-role">Biology Teacher, DPS, New Delhi</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tcard">
+          <div class="tcard-top">
+            <div class="tcard-stars">★★★★★</div>
+            <div class="tcard-quote-icon">"</div>
+          </div>
+          <p class="tcard-quote">தமிழில் notes generate பண்ண முடியுது! The Question Paper Generator for Tamil Nadu State Board syllabus is spot-on. I used to spend entire Sundays preparing papers — now it takes 5 minutes. The Topic Explainer helps me explain difficult concepts in simple Tamil. Outstanding tool.</p>
+          <div class="tcard-author">
+            <div class="tcard-avatar">MS</div>
+            <div>
+              <p class="tcard-name">Meenakshi Sundaram</p>
+              <p class="tcard-role">Tamil Language Teacher, Coimbatore</p>
+            </div>
+          </div>
+        </div>
+
       </div>
-    `;
-  }).join('');
-}
-
-function loadFromHistory(index) {
-  const history = getHistory();
-  const item = history[index];
-  if (!item) return;
-  currentRawText = item.text;
-  document.getElementById('placeholder').style.display = 'none';
-  document.getElementById('outputText').innerHTML = marked.parse(item.text);
-  document.getElementById('outputText').style.display = 'block';
-  document.getElementById('outputActions').style.display = 'flex';
-  document.getElementById('feedbackRow').style.display = 'flex';
-  const waText = encodeURIComponent(item.text.slice(0, 1000));
-  document.getElementById('waBtn').href = `https://wa.me/?text=${waText}`;
-  window.scrollTo({ top: document.querySelector('.output-card').offsetTop - 80, behavior: 'smooth' });
-}
-
-function clearHistory() {
-  localStorage.removeItem(HISTORY_KEY);
-  renderHistory();
-}
-
-// ============================================
-// PAYWALL — FIXED: check before increment
-// ============================================
-const PAYWALL_CONFIG = {
-  freeLimit: 3,
-  productKey: 'tutorai',
-  productName: 'TutorAI',
-  price: '269',
-  paymentLink: 'https://rzp.io/rzp/yRuGdsm',
-  color: '#F97316',
-  emoji: '📚'
-};
-
-function getUsageCount() {
-  return parseInt(localStorage.getItem('vs_usage_' + PAYWALL_CONFIG.productKey) || '0');
-}
-function incrementUsage() {
-  const count = getUsageCount() + 1;
-  localStorage.setItem('vs_usage_' + PAYWALL_CONFIG.productKey, count);
-  return count;
-}
-function getRemainingTrials() {
-  return Math.max(0, PAYWALL_CONFIG.freeLimit - getUsageCount());
-}
-
-function injectPaywallStyles() {
-  const style = document.createElement('style');
-  style.textContent = `
-    .vs-trial-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 999;
-      background: #111; border-top: 1px solid rgba(255,255,255,0.1);
-      padding: 12px 2rem;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 10px;
-      animation: slideUp 0.4s ease;
-    }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    .vs-trial-left { display: flex; align-items: center; gap: 12px; }
-    .vs-trial-dots { display: flex; gap: 5px; }
-    .vs-trial-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.15); }
-    .vs-trial-dot.used { background: ${PAYWALL_CONFIG.color}; }
-    .vs-trial-text { font-size: 13px; color: rgba(255,255,255,0.7); font-family: 'DM Sans', sans-serif; }
-    .vs-trial-text strong { color: white; }
-    .vs-subscribe-btn {
-      background: ${PAYWALL_CONFIG.color}; color: white;
-      border: none; border-radius: 30px; padding: 8px 20px;
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      font-family: 'DM Sans', sans-serif; text-decoration: none;
-      display: inline-block; transition: opacity 0.2s;
-    }
-    .vs-subscribe-btn:hover { opacity: 0.85; }
-    .vs-modal-overlay {
-      position: fixed; inset: 0; z-index: 10000;
-      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
-      display: flex; align-items: center; justify-content: center;
-      padding: 1.5rem; animation: fadeIn 0.3s ease;
-    }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .vs-modal {
-      background: #111; border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px; padding: 2.5rem;
-      max-width: 440px; width: 100%; text-align: center;
-      animation: scaleIn 0.3s ease; position: relative;
-    }
-    @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .vs-modal-emoji { font-size: 48px; margin-bottom: 1rem; display: block; }
-    .vs-modal-title { font-size: 24px; font-weight: 800; color: white; margin-bottom: 0.5rem; font-family: 'Syne', sans-serif; }
-    .vs-modal-sub { font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 2rem; line-height: 1.6; }
-    .vs-modal-price { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
-    .vs-price-amount { font-size: 36px; font-weight: 800; color: white; font-family: 'Syne', sans-serif; }
-    .vs-price-amount span { font-size: 16px; color: rgba(255,255,255,0.5); font-weight: 400; }
-    .vs-price-desc { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 4px; }
-    .vs-modal-features { list-style: none; margin-bottom: 1.5rem; text-align: left; }
-    .vs-modal-features li { font-size: 13px; color: rgba(255,255,255,0.6); padding: 6px 0; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .vs-modal-features li:last-child { border-bottom: none; }
-    .vs-modal-features li::before { content: '✓'; color: ${PAYWALL_CONFIG.color}; font-weight: 700; }
-    .vs-modal-cta { display: block; width: 100%; background: ${PAYWALL_CONFIG.color}; color: white; border: none; border-radius: 30px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Syne', sans-serif; text-decoration: none; text-align: center; transition: opacity 0.2s; margin-bottom: 1rem; }
-    .vs-modal-cta:hover { opacity: 0.85; }
-    .vs-modal-dismiss { font-size: 12px; color: rgba(255,255,255,0.3); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; }
-    .vs-modal-dismiss:hover { color: rgba(255,255,255,0.6); }
-  `;
-  document.head.appendChild(style);
-}
-
-function showTrialBar() {
-  if (document.getElementById('vsTrialBar')) return;
-  const remaining = getRemainingTrials();
-  const used = getUsageCount();
-  if (remaining <= 0) return showEndedBar();
-
-  const bar = document.createElement('div');
-  bar.className = 'vs-trial-bar'; bar.id = 'vsTrialBar';
-  let dots = '';
-  for (let i = 0; i < PAYWALL_CONFIG.freeLimit; i++) {
-    dots += `<div class="vs-trial-dot ${i < used ? 'used' : ''}"></div>`;
-  }
-  bar.innerHTML = `
-    <div class="vs-trial-left">
-      <div class="vs-trial-dots">${dots}</div>
-      <div class="vs-trial-text"><strong>${remaining} free ${remaining === 1 ? 'generation' : 'generations'}</strong> remaining</div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center"><button onclick="showTokenInput()" style="background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.5);border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:DM Sans,sans-serif;white-space:nowrap;">I have a token</button><a href="${PAYWALL_CONFIG.paymentLink}" target="_blank" class="vs-subscribe-btn">Subscribe ₹${PAYWALL_CONFIG.price}/month →</a></div>
-  `;
-  document.body.appendChild(bar);
-  document.body.style.paddingBottom = '60px';
-}
+  </section>
 
-function showEndedBar() {
-  if (document.getElementById('vsTrialBar')) return;
-  const bar = document.createElement('div');
-  bar.className = 'vs-trial-bar'; bar.id = 'vsTrialBar';
-  bar.innerHTML = `
-    <div class="vs-trial-text" style="color:rgba(255,255,255,0.7)"><strong style="color:white">Free trial ended.</strong> Subscribe to continue using ${PAYWALL_CONFIG.productName}</div>
-    <div style="display:flex;gap:8px;align-items:center"><button onclick="showTokenInput()" style="background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.5);border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:DM Sans,sans-serif;white-space:nowrap;">I have a token</button><a href="${PAYWALL_CONFIG.paymentLink}" target="_blank" class="vs-subscribe-btn">Subscribe ₹${PAYWALL_CONFIG.price}/month →</a></div>
-  `;
-  document.body.appendChild(bar);
-  document.body.style.paddingBottom = '60px';
-}
-
-function updateTrialBar() {
-  const bar = document.getElementById('vsTrialBar');
-  if (!bar) return;
-  const remaining = getRemainingTrials();
-  const used = getUsageCount();
-  if (remaining <= 0) { bar.remove(); showEndedBar(); return; }
-  let dots = '';
-  for (let i = 0; i < PAYWALL_CONFIG.freeLimit; i++) {
-    dots += `<div class="vs-trial-dot ${i < used ? 'used' : ''}"></div>`;
-  }
-  bar.querySelector('.vs-trial-dots').innerHTML = dots;
-  bar.querySelector('.vs-trial-text').innerHTML = `<strong>${remaining} free ${remaining === 1 ? 'generation' : 'generations'}</strong> remaining`;
-}
-
-function showPaywallModal() {
-  if (document.getElementById('vsModalOverlay')) return;
-  const overlay = document.createElement('div');
-  overlay.className = 'vs-modal-overlay'; overlay.id = 'vsModalOverlay';
-  overlay.innerHTML = `
-    <div class="vs-modal">
-      <span class="vs-modal-emoji">${PAYWALL_CONFIG.emoji}</span>
-      <div class="vs-modal-title">You've used all 3 free generations</div>
-      <div class="vs-modal-sub">Subscribe to ${PAYWALL_CONFIG.productName} and get unlimited access to all tools.</div>
-      <div class="vs-modal-price">
-        <div class="vs-price-amount">₹${PAYWALL_CONFIG.price}<span>/month</span></div>
-        <div class="vs-price-desc">Cancel anytime · Unlimited generations</div>
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-box">
+      <h2 class="cta-title">Ready to Transform<br><span class="or-text">Your Teaching?</span></h2>
+      <p class="cta-sub">Join 400+ Indian teachers already saving hours every week with AI.<br>Your first 3 generations are completely free.</p>
+      <div class="cta-btns">
+        <a href="/app.html" class="btn btn-or" style="padding:17px 50px;font-size:.97rem;letter-spacing:.1em">
+          Open TutorAI Free
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+        <a href="https://rzp.io/rzp/rMus1XR" class="btn btn-pu" style="padding:17px 50px;font-size:.97rem;letter-spacing:.1em" target="_blank">Subscribe ₹269/mo</a>
       </div>
-      <ul class="vs-modal-features">
-        <li>Unlimited AI generations</li>
-        <li>All 6 tools unlocked</li>
-        <li>6 Indian languages</li>
-        <li>PDF download & WhatsApp share</li>
-        <li>Priority support</li>
-      </ul>
-      <a href="${PAYWALL_CONFIG.paymentLink}" target="_blank" class="vs-modal-cta">Subscribe Now — ₹${PAYWALL_CONFIG.price}/month</a>
-      <a href="https://rzp.io/rzp/aGup1zz" target="_blank" style="display:block;text-align:center;font-size:12px;color:rgba(255,255,255,0.4);margin-top:8px;text-decoration:underline">Or get Suite Pro (all tools) — ₹699/month</a><button onclick="showTokenInput()" style="display:block;width:100%;margin-top:8px;background:none;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);border-radius:30px;padding:10px;font-size:13px;cursor:pointer;font-family:DM Sans,sans-serif;">I already have a token →</button><button class="vs-modal-dismiss" onclick="document.getElementById('vsModalOverlay').remove()">Maybe later</button>
     </div>
-  `;
-  document.body.appendChild(overlay);
-}
+  </section>
 
+  <!-- FOOTER -->
+  <footer>
+    <div class="f-logo">TUTOR AI</div>
+    <p class="f-copy">© 2024 TutorAI · Built for India's Teachers</p>
+    <div class="f-links">
+      <a href="/app.html" class="f-link">App</a>
+      <a href="#features" class="f-link">Tools</a>
+      <a href="#pricing" class="f-link">Pricing</a>
+    </div>
+  </footer>
 
-// ============================================
-// REAL TOKEN-BASED PAYWALL
-// ============================================
-const AUTH_API = 'https://vectrasource-auth.vercel.app';
+</div>
 
-function getToken() { return localStorage.getItem('vs_token_' + PAYWALL_CONFIG.productKey); }
-function saveToken(t) { localStorage.setItem('vs_token_' + PAYWALL_CONFIG.productKey, t); }
-function clearToken() { localStorage.removeItem('vs_token_' + PAYWALL_CONFIG.productKey); }
+<script>
+// ── NAV SCROLL ───────────────────────────────────────────────────────────────
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 60);
+  const op = Math.max(0.18, 1 - window.scrollY / (window.innerHeight * 0.75));
+  const c3d = document.getElementById('canvas3d');
+  if (c3d) c3d.style.opacity = op;
+}, { passive: true });
 
-async function verifyToken(token) {
+// ── THREE.JS SCENE (after DOM + fonts ready) ─────────────────────────────────
+function initThreeScene() {
+  if (typeof THREE === 'undefined') return;
+
+  const canvas = document.getElementById('canvas3d');
+  if (!canvas) return;
+
   try {
-    const res = await fetch(AUTH_API + '/api/verify', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, product: PAYWALL_CONFIG.productKey })
+    const probe = document.createElement('canvas');
+    const testCtx = probe.getContext('webgl2') || probe.getContext('webgl') || probe.getContext('experimental-webgl');
+    if (!testCtx) return;
+  } catch(e) { return; }
+
+  const W = window.innerWidth, H = window.innerHeight;
+  canvas.width  = W;
+  canvas.height = H;
+  const isMobile = W < 768;
+
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile, alpha: true, powerPreference: 'high-performance' });
+  } catch(e) { return; }
+
+  renderer.setSize(W, H, false);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = !isMobile;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.25;
+  try { renderer.outputColorSpace = THREE.SRGBColorSpace; } catch(e) {}
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x0f0a05, 0.02);
+
+  const camera = new THREE.PerspectiveCamera(isMobile ? 70 : 60, W / H, 0.1, 100);
+  camera.position.set(0, 1.5, isMobile ? 16 : 13);
+  camera.lookAt(0, 0, 0);
+
+  // ── LIGHTS ──────────────────────────────────────────────────────────────────
+  scene.add(new THREE.AmbientLight(0x1a0800, 3.8));
+
+  const orLight = new THREE.PointLight(0xF97316, 8, 32);
+  orLight.position.set(6, 8, 5);
+  orLight.castShadow = !isMobile;
+  scene.add(orLight);
+
+  const puLight = new THREE.PointLight(0x7C3AED, 4.5, 26);
+  puLight.position.set(-7, -3, 4);
+  scene.add(puLight);
+
+  const goldRim = new THREE.DirectionalLight(0xFBBF24, 0.65);
+  goldRim.position.set(2, 10, -6);
+  scene.add(goldRim);
+
+  const topSpot = new THREE.SpotLight(0xFFCF7F, 5.5, 22, Math.PI / 6, 0.35, 1.5);
+  topSpot.position.set(0, 12, 3);
+  topSpot.castShadow = !isMobile;
+  scene.add(topSpot);
+  scene.add(topSpot.target);
+
+  // ── MATERIALS ───────────────────────────────────────────────────────────────
+  const matPage = new THREE.MeshStandardMaterial({
+    color: 0xFFF8F0, roughness: 0.86, metalness: 0,
+    emissive: 0x120800, emissiveIntensity: 0.06
+  });
+  const matSpine = new THREE.MeshStandardMaterial({
+    color: 0x7C3AED, roughness: 0.5, metalness: 0.45,
+    emissive: 0x2A0080, emissiveIntensity: 0.45
+  });
+  const matPencilBody = new THREE.MeshStandardMaterial({
+    color: 0xFBBF24, roughness: 0.7, metalness: 0.2,
+    emissive: 0x7A5500, emissiveIntensity: 0.2
+  });
+  const matCapDark = new THREE.MeshStandardMaterial({
+    color: 0x1a0800, roughness: 0.65, metalness: 0.5,
+    emissive: 0x7C3AED, emissiveIntensity: 0.3
+  });
+  const matOrBasic  = new THREE.MeshBasicMaterial({ color: 0xF97316 });
+  const matPuBasic  = new THREE.MeshBasicMaterial({ color: 0x7C3AED });
+  const matGoldB    = new THREE.MeshBasicMaterial({ color: 0xFBBF24 });
+
+  // ── BOOK (center piece) ──────────────────────────────────────────────────────
+  const bookGrp = new THREE.Group();
+  scene.add(bookGrp);
+
+  const leftPage = new THREE.Mesh(new THREE.BoxGeometry(1.85, 2.55, 0.065), matPage);
+  leftPage.position.set(-0.94, 0, 0);
+  leftPage.rotation.y = 0.36;
+  leftPage.castShadow = true;
+  bookGrp.add(leftPage);
+
+  const rightPage = new THREE.Mesh(new THREE.BoxGeometry(1.85, 2.55, 0.065), matPage);
+  rightPage.position.set(0.94, 0, 0);
+  rightPage.rotation.y = -0.36;
+  rightPage.castShadow = true;
+  bookGrp.add(rightPage);
+
+  const spine = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.55, 0.3), matSpine);
+  bookGrp.add(spine);
+
+  // Orange accent line on left page
+  const coverBar = new THREE.Mesh(
+    new THREE.BoxGeometry(1.5, 0.06, 0.072),
+    matOrBasic
+  );
+  coverBar.position.set(-0.9, 1.08, 0.037);
+  coverBar.rotation.y = 0.36;
+  bookGrp.add(coverBar);
+
+  // Ruled lines - left page (purple)
+  for (let i = 0; i < 8; i++) {
+    const line = new THREE.Mesh(
+      new THREE.BoxGeometry(1.42, 0.022, 0.07),
+      new THREE.MeshBasicMaterial({ color: 0x7C3AED, transparent: true, opacity: 0.2 })
+    );
+    line.position.set(-0.9, 0.7 - i * 0.23, 0.038);
+    line.rotation.y = 0.36;
+    bookGrp.add(line);
+  }
+
+  // Ruled lines - right page (orange)
+  for (let i = 0; i < 8; i++) {
+    const line = new THREE.Mesh(
+      new THREE.BoxGeometry(1.42, 0.022, 0.07),
+      new THREE.MeshBasicMaterial({ color: 0xF97316, transparent: true, opacity: 0.17 })
+    );
+    line.position.set(0.9, 0.7 - i * 0.23, 0.038);
+    line.rotation.y = -0.36;
+    bookGrp.add(line);
+  }
+
+  // Bottom glow ring
+  const bookRing = new THREE.Mesh(
+    new THREE.TorusGeometry(1.55, 0.04, 6, 72),
+    new THREE.MeshBasicMaterial({ color: 0xF97316, transparent: true, opacity: 0.28 })
+  );
+  bookRing.rotation.x = Math.PI / 2;
+  bookRing.position.y = -1.35;
+  bookGrp.add(bookRing);
+
+  // Edge lines on pages
+  const lEdge = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(1.85, 2.55, 0.065)),
+    new THREE.LineBasicMaterial({ color: 0xFBBF24, transparent: true, opacity: 0.15 })
+  );
+  lEdge.position.set(-0.94, 0, 0);
+  lEdge.rotation.y = 0.36;
+  bookGrp.add(lEdge);
+
+  // ── BOARD CARDS (CanvasTexture) ─────────────────────────────────────────────
+  function makeCardTex(line1, line2, bgHex, txtHex) {
+    const c = document.createElement('canvas');
+    c.width = 320; c.height = 160;
+    const ctx = c.getContext('2d');
+
+    // Background fill
+    ctx.fillStyle = bgHex + 'ee';
+    if (ctx.roundRect) {
+      ctx.beginPath(); ctx.roundRect(6, 6, 308, 148, 14); ctx.fill();
+      ctx.strokeStyle = txtHex + '77'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(6, 6, 308, 148, 14); ctx.stroke();
+    } else {
+      ctx.fillRect(6, 6, 308, 148);
+    }
+
+    // Shine stripe
+    const shine = ctx.createLinearGradient(0, 0, 320, 0);
+    shine.addColorStop(0, 'transparent');
+    shine.addColorStop(0.4, txtHex + '18');
+    shine.addColorStop(1, 'transparent');
+    ctx.fillStyle = shine;
+    ctx.fillRect(6, 6, 308, 148);
+
+    // Text
+    ctx.fillStyle = txtHex;
+    ctx.font = 'bold 40px Poppins, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(line1, 160, line2 ? 70 : 80);
+
+    if (line2) {
+      ctx.font = '19px Poppins, sans-serif';
+      ctx.fillStyle = txtHex + 'bb';
+      ctx.fillText(line2, 160, 114);
+    }
+
+    return new THREE.CanvasTexture(c);
+  }
+
+  const BOARD_DATA = [
+    { l1:'CBSE',    l2:'Board',      bg:'#7C2D00', txt:'#FED7AA', r:5.5,  spd:.32, y: 1.4, phase:0 },
+    { l1:'SCERT',   l2:'Kerala',     bg:'#064e3b', txt:'#6ee7b7', r:6.1,  spd:.27, y:-0.9, phase:Math.PI*.5 },
+    { l1:'ICSE',    l2:'Board',      bg:'#3b0764', txt:'#d8b4fe', r:5.8,  spd:.35, y: 0.5, phase:Math.PI },
+    { l1:'TN State',l2:'Board',      bg:'#1c1917', txt:'#fcd34d', r:6.4,  spd:.25, y:-1.8, phase:Math.PI*1.5 },
+  ];
+
+  const boardCards = BOARD_DATA.map(d => {
+    const tex  = makeCardTex(d.l1, d.l2, d.bg, d.txt);
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.45, 1.22),
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide })
+    );
+    scene.add(mesh);
+    return { mesh, orbit: d };
+  });
+
+  // ── LANGUAGE SCRIPT CARDS ───────────────────────────────────────────────────
+  function makeLangTex(text, bgHex, glowHex) {
+    const c = document.createElement('canvas');
+    c.width = 240; c.height = 90;
+    const ctx = c.getContext('2d');
+
+    ctx.fillStyle = bgHex + 'cc';
+    if (ctx.roundRect) {
+      ctx.beginPath(); ctx.roundRect(5, 5, 230, 80, 22); ctx.fill();
+      ctx.strokeStyle = glowHex; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(5, 5, 230, 80, 22); ctx.stroke();
+    } else {
+      ctx.fillRect(5, 5, 230, 80);
+    }
+
+    ctx.fillStyle = glowHex;
+    ctx.font = 'bold 28px "Noto Sans", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 120, 45);
+
+    return new THREE.CanvasTexture(c);
+  }
+
+  const LANG_DATA = [
+    { text:'മലയാളം', bg:'#064e3b', glow:'#34d399', r:8.2,  spd:.21, y: 2.2, phase:0,              tilt: 0.3 },
+    { text:'हिंदी',  bg:'#431407', glow:'#fb923c', r:8.8,  spd:.17, y:-0.6, phase:Math.PI*.33,    tilt:-0.2 },
+    { text:'தமிழ்', bg:'#2e1065', glow:'#a78bfa', r:7.8,  spd:.24, y: 2.5, phase:Math.PI*.66,    tilt: 0.4 },
+    { text:'తెలుగు', bg:'#064e3b', glow:'#6ee7b7', r:9.3,  spd:.15, y:-1.8, phase:Math.PI,        tilt:-0.3 },
+    { text:'ಕನ್ನಡ', bg:'#451a03', glow:'#fcd34d', r:8.6,  spd:.19, y: 1.2, phase:Math.PI*1.33,   tilt: 0.2 },
+    { text:'English', bg:'#1e3a5f', glow:'#60a5fa', r:7.6,  spd:.26, y:-2.4, phase:Math.PI*1.66,  tilt:-0.35},
+  ];
+
+  const langCards = LANG_DATA.slice(0, isMobile ? 3 : 6).map(d => {
+    const tex  = makeLangTex(d.text, d.bg, d.glow);
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.75, 0.66),
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide })
+    );
+    scene.add(mesh);
+    return { mesh, orbit: d };
+  });
+
+  // ── GRADUATION CAP ──────────────────────────────────────────────────────────
+  const capGrp = new THREE.Group();
+  scene.add(capGrp);
+
+  const hatBase = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.42, 0.58, 8), matCapDark);
+  capGrp.add(hatBase);
+
+  const hatBoard = new THREE.Mesh(new THREE.BoxGeometry(1.52, 0.07, 1.52), matCapDark);
+  hatBoard.position.y = 0.32;
+  capGrp.add(hatBoard);
+
+  const capBtn = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), matGoldB);
+  capBtn.position.y = 0.42;
+  capGrp.add(capBtn);
+
+  // Tassel
+  for (let i = 0; i < 7; i++) {
+    const bead = new THREE.Mesh(new THREE.SphereGeometry(0.034, 6, 6), matGoldB);
+    bead.position.set(0.64, 0.3 - i * 0.11, 0);
+    capGrp.add(bead);
+  }
+
+  capGrp.position.set(-5.5, 3.2, -1.5);
+  capGrp.rotation.z = 0.18;
+
+  // ── PENCIL ──────────────────────────────────────────────────────────────────
+  const pencilGrp = new THREE.Group();
+  scene.add(pencilGrp);
+
+  const pencilBody = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 2.9, 6), matPencilBody);
+  pencilGrp.add(pencilBody);
+
+  const woodCone = new THREE.Mesh(
+    new THREE.ConeGeometry(0.1, 0.42, 6),
+    new THREE.MeshStandardMaterial({ color: 0x8B6914, roughness: 0.9 })
+  );
+  woodCone.position.y = -(1.45 + 0.21);
+  woodCone.rotation.z = Math.PI;
+  pencilGrp.add(woodCone);
+
+  const graphTip = new THREE.Mesh(
+    new THREE.ConeGeometry(0.03, 0.14, 6),
+    new THREE.MeshBasicMaterial({ color: 0x222222 })
+  );
+  graphTip.position.y = -(1.45 + 0.42 + 0.07);
+  graphTip.rotation.z = Math.PI;
+  pencilGrp.add(graphTip);
+
+  const eraser = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.1, 0.1, 0.22, 6),
+    new THREE.MeshStandardMaterial({ color: 0xFFB3B3, roughness: 0.9 })
+  );
+  eraser.position.y = 1.45 + 0.11;
+  pencilGrp.add(eraser);
+
+  const pencilBand = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.106, 0.106, 0.1, 6),
+    new THREE.MeshStandardMaterial({ color: 0xC0C0C0, metalness: 0.92, roughness: 0.12 })
+  );
+  pencilBand.position.y = 1.45;
+  pencilGrp.add(pencilBand);
+
+  pencilGrp.position.set(5.5, 2.5, -2.5);
+  pencilGrp.rotation.z = -0.4;
+
+  // ── AURA, RINGS, GRID ───────────────────────────────────────────────────────
+  const aura = new THREE.Mesh(
+    new THREE.SphereGeometry(5.2, 28, 28),
+    new THREE.MeshBasicMaterial({ color: 0xF97316, transparent: true, opacity: 0.014, side: THREE.BackSide })
+  );
+  scene.add(aura);
+
+  const pulseRings = [0, 0.33, 0.66].map(offset => {
+    const r = new THREE.Mesh(
+      new THREE.TorusGeometry(1, 0.03, 6, 72),
+      new THREE.MeshBasicMaterial({ color: 0xF97316, transparent: true, opacity: 0 })
+    );
+    r.rotation.x = Math.PI / 2;
+    r.position.y = -1.5;
+    scene.add(r);
+    return { mesh: r, offset };
+  });
+
+  const grid = new THREE.GridHelper(28, 28, 0xF97316, 0x0f0a05);
+  grid.material.transparent = true;
+  grid.material.opacity = 0.08;
+  grid.position.y = -5.8;
+  scene.add(grid);
+
+  // ── PARTICLES (2500 warm) ────────────────────────────────────────────────────
+  const PC = isMobile ? 1200 : 2500;
+  const pPos = new Float32Array(PC * 3);
+  const pCol = new Float32Array(PC * 3);
+
+  for (let i = 0; i < PC; i++) {
+    const r = 9 + Math.random() * 16;
+    const theta = Math.random() * Math.PI * 2;
+    const phi   = Math.acos(2 * Math.random() - 1);
+    pPos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+    pPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta) * 0.55;
+    pPos[i*3+2] = r * Math.cos(phi);
+
+    const rnd = Math.random();
+    const b   = 0.4 + Math.random() * 0.6;
+    if (rnd > 0.65) {
+      pCol[i*3]   = 0.49 * b; pCol[i*3+1] = 0.23 * b; pCol[i*3+2] = 0.93 * b; // purple
+    } else if (rnd > 0.3) {
+      pCol[i*3]   = 0.98 * b; pCol[i*3+1] = 0.45 * b; pCol[i*3+2] = 0.09 * b; // orange
+    } else {
+      pCol[i*3]   = 0.98 * b; pCol[i*3+1] = 0.75 * b; pCol[i*3+2] = 0.14 * b; // gold
+    }
+  }
+
+  const pGeom = new THREE.BufferGeometry();
+  pGeom.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+  pGeom.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
+  const particles = new THREE.Points(pGeom,
+    new THREE.PointsMaterial({ size: 0.068, vertexColors: true, transparent: true, opacity: 0.78, sizeAttenuation: true })
+  );
+  scene.add(particles);
+
+  // ── MOUSE PARALLAX ───────────────────────────────────────────────────────────
+  let mx = 0, my = 0, tx = 0, ty = 0;
+  window.addEventListener('mousemove', e => {
+    mx = (e.clientX / window.innerWidth  - 0.5) * 2;
+    my = (e.clientY / window.innerHeight - 0.5) * 2;
+  }, { passive: true });
+
+  // ── RESIZE ───────────────────────────────────────────────────────────────────
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+  });
+
+  // ── ANIMATE ──────────────────────────────────────────────────────────────────
+  const clock = new THREE.Clock();
+
+  (function animate() {
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+
+    tx += (mx - tx) * 0.028;
+    ty += (my - ty) * 0.028;
+
+    // Book: slow rotation + bob
+    bookGrp.rotation.y = Math.sin(t * 0.17) * 0.38 + tx * 0.16;
+    bookGrp.position.y = Math.sin(t * 0.44) * 0.2;
+    bookGrp.rotation.x = -ty * 0.05;
+
+    // Board cards orbit
+    boardCards.forEach(({ mesh, orbit }) => {
+      const a = t * orbit.spd + orbit.phase;
+      mesh.position.set(
+        Math.cos(a) * orbit.r,
+        orbit.y + Math.sin(t * 0.38 + orbit.phase) * 0.5,
+        Math.sin(a) * orbit.r
+      );
+      mesh.rotation.y = -a + Math.PI;
     });
-    return await res.json();
-  } catch(e) { return { valid: false, error: 'Network error' }; }
+
+    // Language cards orbit
+    langCards.forEach(({ mesh, orbit }) => {
+      const a = t * orbit.spd + orbit.phase;
+      mesh.position.set(
+        Math.cos(a) * orbit.r,
+        orbit.y + Math.sin(t * 0.33 + orbit.phase) * 0.6,
+        Math.sin(a) * orbit.r
+      );
+      mesh.rotation.y = -a + Math.PI;
+      mesh.rotation.x = orbit.tilt * Math.sin(t * 0.24 + orbit.phase);
+    });
+
+    // Graduation cap
+    capGrp.position.y = 3.2 + Math.sin(t * 0.48 + 1.2) * 0.4;
+    capGrp.rotation.y = t * 0.28;
+
+    // Pencil
+    pencilGrp.position.y = 2.5 + Math.sin(t * 0.41 + 2.1) * 0.35;
+    pencilGrp.rotation.y = Math.sin(t * 0.22) * 0.3;
+    pencilGrp.rotation.z = -0.4 + Math.sin(t * 0.31) * 0.1;
+
+    // Pulse rings
+    pulseRings.forEach(({ mesh, offset }) => {
+      const phase = (t * 0.34 + offset) % 1;
+      mesh.scale.setScalar(1 + phase * 8);
+      mesh.material.opacity = 0.38 * (1 - phase);
+    });
+
+    // Particles
+    particles.rotation.y = t * 0.015;
+    particles.rotation.x = Math.sin(t * 0.013) * 0.04;
+
+    // Light animation
+    orLight.position.x = Math.cos(t * 0.3) * 9;
+    orLight.position.z = Math.sin(t * 0.3) * 9;
+    orLight.intensity  = 7 + Math.sin(t * 0.62) * 2.2;
+
+    // Aura pulse
+    aura.material.opacity = 0.011 + Math.sin(t * 0.4) * 0.006;
+
+    // Camera parallax
+    camera.position.x = tx * 0.85;
+    camera.position.y = 1.5 - ty * 0.55;
+    camera.lookAt(0, 0, 0);
+
+    renderer.render(scene, camera);
+  }());
 }
 
-async function checkPaywall() {
-  const saved = getToken();
-  if (saved) {
-    const r = await verifyToken(saved);
-    if (r.valid) { showSubscribedBar(r); return true; }
-    clearToken();
-    if (r.error === 'Subscription expired') { showExpiredModal(); return false; }
-  }
-  const current = getUsageCount();
-  if (current >= PAYWALL_CONFIG.freeLimit) { showPaywallModal(); return false; }
-  incrementUsage(); updateTrialBar(); return true;
-}
-
-function showSubscribedBar(r) {
-  const existing = document.getElementById('vsTrialBar');
-  if (existing) existing.remove();
-  const bar = document.createElement('div');
-  bar.className = 'vs-trial-bar'; bar.id = 'vsTrialBar';
-  bar.style.cssText = 'background:#071a0a;border-top:1px solid rgba(74,222,128,0.2)';
-  const expiry = new Date(r.validUntil).toLocaleDateString('en-IN');
-  bar.innerHTML = `<div class="vs-trial-text"><strong style="color:#4ade80">✓ ${r.planName} Active</strong><span style="color:rgba(255,255,255,0.4);margin-left:8px;font-size:12px">Valid until ${expiry}</span></div><span style="font-size:11px;color:rgba(255,255,255,0.3)">${r.email}</span>`;
-  document.body.appendChild(bar); document.body.style.paddingBottom = '60px';
-}
-
-function showTokenInput() {
-  if (document.getElementById('vsTokenOverlay')) return;
-  const o = document.createElement('div'); o.className = 'vs-modal-overlay'; o.id = 'vsTokenOverlay';
-  o.innerHTML = `<div class="vs-modal"><span class="vs-modal-emoji">🔑</span><div class="vs-modal-title">Enter Your Access Token</div><div class="vs-modal-sub">Paste the token from your subscription email.</div><input type="text" id="vsTokenInput" placeholder="vs_..." style="width:100%;padding:12px 14px;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;background:rgba(255,255,255,0.05);color:white;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:12px;"/><div id="vsTokenError" style="font-size:12px;color:#e05555;margin-bottom:12px;display:none;"></div><button onclick="submitToken()" class="vs-modal-cta" id="vsTokenBtn">Verify Token</button><div style="margin-top:12px"><span style="font-size:12px;color:rgba(255,255,255,0.3)">No token? </span><a href="${PAYWALL_CONFIG.paymentLink}" target="_blank" style="font-size:12px;color:${PAYWALL_CONFIG.color};text-decoration:underline">Subscribe here →</a></div><button class="vs-modal-dismiss" onclick="document.getElementById('vsTokenOverlay').remove()">Cancel</button></div>`;
-  document.body.appendChild(o);
-  setTimeout(() => document.getElementById('vsTokenInput')?.focus(), 100);
-}
-
-async function submitToken() {
-  const input = document.getElementById('vsTokenInput');
-  const btn = document.getElementById('vsTokenBtn');
-  const errEl = document.getElementById('vsTokenError');
-  const token = input?.value.trim();
-  if (!token) { errEl.textContent='Please enter your token.'; errEl.style.display='block'; return; }
-  btn.textContent='Verifying...'; btn.style.opacity='0.7'; errEl.style.display='none';
-  const r = await verifyToken(token);
-  if (r.valid) {
-    saveToken(token);
-    document.getElementById('vsTokenOverlay')?.remove();
-    document.getElementById('vsModalOverlay')?.remove();
-    showSubscribedBar(r);
-    const s = document.createElement('div');
-    s.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#071a0a;border:1px solid #4ade80;color:#4ade80;padding:12px 24px;border-radius:30px;font-size:14px;font-weight:600;z-index:99999;font-family:DM Sans,sans-serif';
-    s.textContent='✓ Token verified! Unlimited access unlocked.';
-    document.body.appendChild(s); setTimeout(()=>s.remove(),3000);
+// ── INIT AFTER DOM + FONTS ───────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(initThreeScene);
   } else {
-    errEl.textContent = r.error==='Subscription expired' ? 'Token expired. Please renew.' : 'Invalid token. Check your email and try again.';
-    errEl.style.display='block'; btn.textContent='Verify Token'; btn.style.opacity='1';
+    initThreeScene();
   }
-}
-
-function showExpiredModal() {
-  if (document.getElementById('vsModalOverlay')) return;
-  const o = document.createElement('div'); o.className='vs-modal-overlay'; o.id='vsModalOverlay';
-  o.innerHTML=`<div class="vs-modal"><span class="vs-modal-emoji">⏰</span><div class="vs-modal-title">Subscription Expired</div><div class="vs-modal-sub">Your ${PAYWALL_CONFIG.productName} subscription has expired.</div><a href="${PAYWALL_CONFIG.paymentLink}" target="_blank" class="vs-modal-cta">Renew — ₹${PAYWALL_CONFIG.price}/month</a><button onclick="showTokenInput()" style="display:block;width:100%;margin-top:8px;background:none;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);border-radius:30px;padding:10px;font-size:13px;cursor:pointer;font-family:DM Sans,sans-serif;">I already have a token →</button><button class="vs-modal-dismiss" onclick="document.getElementById('vsModalOverlay').remove()">Maybe later</button></div>`;
-  document.body.appendChild(o);
-}
-
-
-document.addEventListener('DOMContentLoaded', async () => {
-  injectPaywallStyles();
-  renderHistory();
-  const saved = getToken();
-  if (saved) {
-    const r = await verifyToken(saved);
-    if (r.valid) { showSubscribedBar(r); }
-    else { clearToken(); showTrialBar(); }
-  } else { showTrialBar(); }
 });
-
 </script>
 </body>
 </html>
